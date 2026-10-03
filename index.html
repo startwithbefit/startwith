@@ -1,440 +1,157 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#173f35">
-<title>Startwith</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Startwith</title>
 
-<style>
-*{box-sizing:border-box}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f7f5ef;
-  color:#18352d;
-}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7f2;
+      color: #222;
+    }
 
-.app{
-  max-width:520px;
-  margin:auto;
-  padding:25px 18px 40px;
-}
+    .container {
+      max-width: 480px;
+      margin: auto;
+      padding: 30px 20px;
+    }
 
-.logo{
-  font-size:34px;
-  font-weight:800;
-  margin-bottom:8px;
-}
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
 
-.sub{
-  color:#66736d;
-  margin-bottom:25px;
-}
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
 
-.hero{
-  background:#173f35;
-  color:white;
-  border-radius:24px;
-  padding:25px;
-  margin-bottom:25px;
-}
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
 
-.hero h1{
-  margin:15px 0 8px;
-  font-size:27px;
-}
+    .secondary {
+      background: white;
+      color: #222;
+      border: 1px solid #ddd;
+    }
 
-.hero p{
-  line-height:1.5;
-}
+    .form {
+      display: none;
+      margin-top: 25px;
+    }
 
-.buttons{
-  display:flex;
-  gap:10px;
-  margin-top:20px;
-}
+    input, select {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
 
-button{
-  border:0;
-  border-radius:13px;
-  padding:13px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.primary{
-  background:white;
-  color:#173f35;
-}
-
-.secondary{
-  background:#31594e;
-  color:white;
-}
-
-.form{
-  display:none;
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  margin-bottom:20px;
-}
-
-.form.active{
-  display:block;
-}
-
-input,select{
-  width:100%;
-  padding:14px;
-  margin:7px 0;
-  border:1px solid #ddd;
-  border-radius:12px;
-  font-size:15px;
-}
-
-.form button{
-  width:100%;
-  margin-top:10px;
-  background:#173f35;
-  color:white;
-}
-
-.back{
-  background:#eee!important;
-  color:#18352d!important;
-}
-
-.message{
-  margin-top:12px;
-  font-size:14px;
-}
-
-.title{
-  font-size:21px;
-  font-weight:bold;
-  margin:25px 0 12px;
-}
-
-.card{
-  background:white;
-  border-radius:18px;
-  padding:18px;
-  margin:10px 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  box-shadow:0 5px 18px rgba(0,0,0,.06);
-}
-
-.card h3{
-  margin:0 0 5px;
-}
-
-.price{
-  font-weight:bold;
-  font-size:18px;
-}
-</style>
+    .back {
+      background: #eee;
+      color: #222;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="container">
 
-<div class="logo">Startwith</div>
-<div class="sub">Sağlıklı kahvaltı kapınızda.</div>
+  <h1>Startwith</h1>
+  <div class="subtitle">Sağlıklı kahvaltı kapınızda</div>
 
-<div id="home">
+  <div id="home">
+    <button onclick="showRegister()">Üye Ol</button>
+    <button class="secondary" onclick="showLogin()">Giriş Yap</button>
+  </div>
 
-<div class="hero">
-<h1>Güne güzel başla.</h1>
+  <div id="registerForm" class="form">
 
-<p>
-Kahvaltını seç, teslimat saatini belirle.
-Biz hazırlayıp kapına getirelim.
-</p>
+    <h2>Üye Ol</h2>
 
-<div class="buttons">
-<button class="primary" onclick="showRegister()">Üye Ol</button>
-<button class="secondary" onclick="showLogin()">Giriş Yap</button>
-</div>
-</div>
+    <input id="firstName" type="text" placeholder="Ad">
+    <input id="lastName" type="text" placeholder="Soyad">
+    <input id="phone" type="tel" placeholder="Telefon">
+    <input id="email" type="email" placeholder="E-posta">
 
-<div class="title">Kahvaltı Paketleri</div>
+    <select id="neighborhood">
+      <option value="">Mahalle seçin</option>
+      <option value="Batıkent Mahallesi">Batıkent Mahallesi</option>
+      <option value="Çamlıca Mahallesi">Çamlıca Mahallesi</option>
+    </select>
 
-<div class="card">
-<div>
-<h3>Ege</h3>
-<small>Zengin ve taze kahvaltı</small>
-</div>
-<div class="price">280 TL</div>
-</div>
+    <input id="address" type="text" placeholder="Adres">
+    <input id="password" type="password" placeholder="Şifre">
 
-<div class="card">
-<div>
-<h3>Spor</h3>
-<small>Dengeli ve protein odaklı</small>
-</div>
-<div class="price">290 TL</div>
-</div>
+    <button onclick="register()">Kayıt Ol</button>
+    <button class="back" onclick="goHome()">Geri</button>
 
-<div class="card">
-<div>
-<h3>Calm</h3>
-<small>Hafif ve dengeli</small>
-</div>
-<div class="price">290 TL</div>
-</div>
+    <p id="registerMessage"></p>
+  </div>
 
-<div class="card">
-<div>
-<h3>Sweet</h3>
-<small>Tatlı sevenlere özel</small>
-</div>
-<div class="price">290 TL</div>
-</div>
+  <div id="loginForm" class="form">
 
-<div class="card">
-<div>
-<h3>Düz</h3>
-<small>Sade kahvaltı</small>
-</div>
-<div class="price">270 TL</div>
-</div>
+    <h2>Giriş Yap</h2>
+
+    <input id="loginEmail" type="email" placeholder="E-posta">
+    <input id="loginPassword" type="password" placeholder="Şifre">
+
+    <button onclick="login()">Giriş Yap</button>
+    <button class="back" onclick="goHome()">Geri</button>
+
+    <p id="loginMessage"></p>
+  </div>
 
 </div>
 
+<script>
 
-<!-- ÜYELİK -->
-
-<div id="register" class="form">
-
-<h2>Hesap Oluştur</h2>
-
-<input id="regName" placeholder="Ad">
-<input id="regSurname" placeholder="Soyad">
-<input id="regPhone" placeholder="Telefon">
-<input id="regEmail" type="email" placeholder="E-posta">
-<input id="regPassword" type="password" placeholder="Şifre">
-
-<select id="regNeighborhood">
-<option value="">Mahalle seç</option>
-<option>Batıkent Mahallesi</option>
-<option>Çamlıca Mahallesi</option>
-</select>
-
-<input id="regAddress" placeholder="Açık adres">
-
-<button onclick="register()">Hesap Oluştur</button>
-<button class="back" onclick="goHome()">Geri</button>
-
-<div id="registerMessage" class="message"></div>
-
-</div>
-
-
-<!-- GİRİŞ -->
-
-<div id="login" class="form">
-
-<h2>Giriş Yap</h2>
-
-<input id="loginEmail" type="email" placeholder="E-posta">
-<input id="loginPassword" type="password" placeholder="Şifre">
-
-<button onclick="login()">Giriş Yap</button>
-<button class="back" onclick="goHome()">Geri</button>
-
-<div id="loginMessage" class="message"></div>
-
-</div>
-
-</div>
-
-
-<script type="module">
-
-import { createClient }
-from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-
-const SUPABASE_URL =
-"https://jwwfwlddmordfudorrla.supabase.co";
-
-
-const SUPABASE_KEY =
-sb_publishable_-6qXohZul38YL1S4DyfiPA_cg7iHPgO;
-
-
-const supabase =
-createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-window.showRegister = function(){
-
-document.getElementById("home").style.display="none";
-
-document.getElementById("login").classList.remove("active");
-
-document.getElementById("register").classList.add("active");
-
+function showRegister() {
+  document.getElementById("home").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("registerForm").style.display = "block";
 }
 
-
-window.showLogin = function(){
-
-document.getElementById("home").style.display="none";
-
-document.getElementById("register").classList.remove("active");
-
-document.getElementById("login").classList.add("active");
-
+function showLogin() {
+  document.getElementById("home").style.display = "none";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "block";
 }
 
-
-window.goHome = function(){
-
-document.getElementById("home").style.display="block";
-
-document.getElementById("register").classList.remove("active");
-
-document.getElementById("login").classList.remove("active");
-
+function goHome() {
+  document.getElementById("home").style.display = "block";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
 }
 
-
-window.register = async function(){
-
-const name =
-document.getElementById("regName").value.trim();
-
-const surname =
-document.getElementById("regSurname").value.trim();
-
-const phone =
-document.getElementById("regPhone").value.trim();
-
-const email =
-document.getElementById("regEmail").value.trim();
-
-const password =
-document.getElementById("regPassword").value;
-
-const neighborhood =
-document.getElementById("regNeighborhood").value;
-
-const address =
-document.getElementById("regAddress").value.trim();
-
-
-if(!name || !surname || !phone || !email ||
-!password || !neighborhood || !address){
-
-document.getElementById("registerMessage").innerText =
-"Lütfen tüm alanları doldurun.";
-
-return;
+function register() {
+  document.getElementById("registerMessage").innerText =
+    "Form çalışıyor. Bir sonraki adımda Supabase bağlantısını ekleyeceğiz.";
 }
 
-
-const {data,error} =
-await supabase.auth.signUp({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-document.getElementById("registerMessage").innerText =
-error.message;
-
-return;
-
-}
-
-
-if(data.user){
-
-const {error:profileError} =
-await supabase
-.from("profiles")
-.insert({
-
-id:data.user.id,
-
-first_name:name,
-
-last_name:surname,
-
-phone:phone,
-
-email:email,
-
-neighborhood:neighborhood,
-
-address:address
-
-});
-
-
-if(profileError){
-
-document.getElementById("registerMessage").innerText =
-"Üyelik oluşturuldu fakat profil kaydedilemedi: "
-+ profileError.message;
-
-return;
-
-}
-
-}
-
-
-document.getElementById("registerMessage").innerText =
-"Üyeliğiniz oluşturuldu. Giriş yapabilirsiniz.";
-
-}
-
-
-window.login = async function(){
-
-const email =
-document.getElementById("loginEmail").value.trim();
-
-const password =
-document.getElementById("loginPassword").value;
-
-
-const {error} =
-await supabase.auth.signInWithPassword({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-document.getElementById("loginMessage").innerText =
-error.message;
-
-return;
-
-}
-
-
-document.getElementById("loginMessage").innerText =
-"Giriş başarılı!";
-
+function login() {
+  document.getElementById("loginMessage").innerText =
+    "Giriş formu çalışıyor.";
 }
 
 </script>
