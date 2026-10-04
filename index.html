@@ -156,6 +156,7 @@
     </label>
 
     <button onclick="login()">Giriş Yap</button>
+    <button class="secondary" onclick="showForgotPassword()">Şifremi Unuttum</button>
     <button class="secondary" onclick="showRegister()">Üye Ol</button>
     <button class="back" onclick="goHome()">Geri</button>
 
@@ -678,6 +679,104 @@ async function register() {
     "Kayıt başarılı! E-posta adresinizi kontrol edin.";
 
 }
+
+
+/* =====================================================
+   ŞİFRE SIFIRLAMA
+===================================================== */
+
+function showForgotPassword() {
+  const savedEmail = document.getElementById("loginEmail")?.value?.trim() || localStorage.getItem("startwithRememberedEmail") || "";
+
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("home").style.display = "block";
+
+  document.getElementById("home").innerHTML = `
+    <h2>Şifremi Unuttum</h2>
+    <p style="text-align:center;color:#667064;margin-bottom:18px;">
+      Üyelikte kullandığınız e-posta adresini girin. Şifre yenileme bağlantısını e-posta adresinize gönderelim.
+    </p>
+    <input id="resetEmail" type="email" placeholder="E-posta" value="${escapeHtml(savedEmail)}">
+    <button onclick="sendPasswordReset()">Şifre Yenileme Bağlantısı Gönder</button>
+    <button class="back" onclick="showLogin()">Giriş Ekranına Dön</button>
+    <p id="resetMessage" style="text-align:center;"></p>
+  `;
+}
+
+async function sendPasswordReset() {
+  const email = document.getElementById("resetEmail")?.value?.trim();
+  const message = document.getElementById("resetMessage");
+
+  if (!email) {
+    message.innerText = "Lütfen e-posta adresinizi girin.";
+    return;
+  }
+
+  message.innerText = "Bağlantı gönderiliyor...";
+
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+
+  if (error) {
+    message.innerText = "Hata: " + error.message;
+    return;
+  }
+
+  message.innerText = "Şifre yenileme bağlantısı gönderildi. Lütfen e-posta kutunuzu kontrol edin.";
+}
+
+function showNewPasswordForm() {
+  const intro = document.getElementById("startwithIntro");
+  if (intro) intro.remove();
+
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("home").style.display = "block";
+
+  document.getElementById("home").innerHTML = `
+    <h2>Yeni Şifre Oluştur</h2>
+    <p style="text-align:center;color:#667064;margin-bottom:18px;">Yeni şifrenizi aşağıya girin.</p>
+    <input id="newPassword" type="password" placeholder="Yeni şifre">
+    <input id="newPasswordAgain" type="password" placeholder="Yeni şifre tekrar">
+    <button onclick="saveNewPassword()">Şifremi Yenile</button>
+    <p id="newPasswordMessage" style="text-align:center;"></p>
+  `;
+}
+
+async function saveNewPassword() {
+  const password = document.getElementById("newPassword")?.value || "";
+  const passwordAgain = document.getElementById("newPasswordAgain")?.value || "";
+  const message = document.getElementById("newPasswordMessage");
+
+  if (password.length < 6) {
+    message.innerText = "Şifreniz en az 6 karakter olmalıdır.";
+    return;
+  }
+
+  if (password !== passwordAgain) {
+    message.innerText = "Girdiğiniz şifreler aynı değil.";
+    return;
+  }
+
+  message.innerText = "Şifreniz yenileniyor...";
+  const { error } = await supabaseClient.auth.updateUser({ password });
+
+  if (error) {
+    message.innerText = "Hata: " + error.message;
+    return;
+  }
+
+  message.innerText = "Şifreniz başarıyla yenilendi. Giriş ekranına yönlendiriliyorsunuz...";
+  await supabaseClient.auth.signOut();
+  setTimeout(() => showLogin(), 1200);
+}
+
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    setTimeout(() => showNewPasswordForm(), 0);
+  }
+});
 
 
 /* =====================================================
