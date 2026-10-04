@@ -224,7 +224,22 @@ async function login() {
   showHome();
 }
 
-function showHome() {
+function showMenu() {
+  document.getElementById("home").innerHTML = `
+    <h2>Kahvaltı Menüsü</h2>
+
+    <div style="background:white; padding:15px; border-radius:10px; margin-top:15px;">
+      <h3>Startwith Fit Kahvaltı</h3>
+      <p>Yumurta, peynir, zeytin, yeşillik, domates, ekmek</p>
+      <strong>249 TL</strong>
+      <button onclick="alert('Sepete eklendi!')">Sepete Ekle</button>
+    </div>
+
+    <button class="back" onclick="showHome()">
+      Geri
+    </button>
+  `;
+}
 
   document.getElementById("registerForm").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
@@ -234,9 +249,9 @@ function showHome() {
     <h2>Hoş geldin!</h2>
     <p>Startwith'e hoş geldin. 🥗</p>
 
-    <button onclick="alert('Menü yakında hazır olacak.')">
-      Kahvaltı Menüsü
-    </button>
+    <button onclick="showMenu()">
+  Kahvaltı Menüsü
+  </button>
 
     <button class="secondary" onclick="alert('Siparişleriniz burada görünecek.')">
       Siparişlerim
