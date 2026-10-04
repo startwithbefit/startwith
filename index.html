@@ -313,9 +313,9 @@ async function showHome() {
    MENÜ
 ========================= */
 
-function showMenu() {
+function getProducts() {
 
-  const products = [
+  return [
 
     {
       name: "Klasik Kahvaltı",
@@ -374,7 +374,13 @@ function showMenu() {
     }
 
   ];
+}
 
+
+function showMenu() {
+
+  const products =
+    getProducts();
 
   let menuHtml = "";
 
@@ -434,9 +440,10 @@ function showMenu() {
               padding:8px 12px;
               flex-shrink:0;
             "
-            onclick='addToCart(
+            onclick='showProductDetail(
               ${JSON.stringify(product.name)},
-              ${product.price}
+              ${product.price},
+              ${JSON.stringify(product.description)}
             )'
           >
             Ekle
@@ -475,33 +482,192 @@ function showMenu() {
 
 
 /* =========================
-   SEPETE EKLE
+   ÜRÜN DETAY / ADET
 ========================= */
 
-function addToCart(name, price) {
+function showProductDetail(
+  name,
+  price,
+  description
+) {
+
+  let quantityOptions = "";
+
+
+  for (
+    let i = 1;
+    i <= 10;
+    i++
+  ) {
+
+    quantityOptions += `
+      <option value="${i}">
+        ${i} adet
+      </option>
+    `;
+
+  }
+
+
+  document.getElementById("home").innerHTML = `
+
+    <h2>
+      ${name}
+    </h2>
+
+    <div style="
+      background:white;
+      padding:16px;
+      border-radius:10px;
+      margin-top:15px;
+    ">
+
+      <p style="
+        line-height:1.6;
+        color:#555;
+      ">
+        ${description}
+      </p>
+
+      <p>
+        <strong>
+          Birim fiyat:
+        </strong>
+
+        ${price.toLocaleString("tr-TR")} TL
+      </p>
+
+
+      <label>
+        <strong>
+          Adet
+        </strong>
+      </label>
+
+      <select
+        id="productQuantity"
+        onchange="updateProductTotal(${price})"
+        style="
+          margin-top:8px;
+          width:100%;
+        "
+      >
+
+        ${quantityOptions}
+
+      </select>
+
+
+      <div style="
+        margin-top:18px;
+        padding-top:15px;
+        border-top:1px solid #eee;
+        font-size:18px;
+      ">
+
+        <strong>
+          Toplam:
+        </strong>
+
+        <span id="productTotal">
+          ${price.toLocaleString("tr-TR")} TL
+        </span>
+
+      </div>
+
+
+      <button
+        onclick='addProductToCart(
+          ${JSON.stringify(name)},
+          ${price}
+        )'
+      >
+        Sepete Ekle
+      </button>
+
+    </div>
+
+
+    <button
+      class="back"
+      onclick="showMenu()"
+    >
+      Menüye Dön
+    </button>
+
+  `;
+}
+
+
+/* =========================
+   ÜRÜN TOPLAMINI GÜNCELLE
+========================= */
+
+function updateProductTotal(price) {
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "productQuantity"
+      ).value
+    );
+
+
+  const total =
+    price * quantity;
+
+
+  document.getElementById(
+    "productTotal"
+  ).innerText =
+    total.toLocaleString("tr-TR") +
+    " TL";
+}
+
+
+/* =========================
+   ÜRÜNÜ SEPETE EKLE
+========================= */
+
+function addProductToCart(
+  name,
+  price
+) {
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "productQuantity"
+      ).value
+    );
+
 
   const existingItem =
     cart.find(
-      item => item.name === name
+      item =>
+        item.name === name
     );
 
 
   if (existingItem) {
 
-    existingItem.quantity++;
+    existingItem.quantity +=
+      quantity;
 
   } else {
 
     cart.push({
       name: name,
       price: price,
-      quantity: 1
+      quantity: quantity
     });
 
   }
 
 
-  showCart();
+  /* Eklendikten sonra tekrar menüye dön */
+
+  showMenu();
 }
 
 
@@ -517,9 +683,12 @@ function showCart() {
 
   cart.forEach((item, index) => {
 
-    total +=
+    const itemTotal =
       item.price *
       item.quantity;
+
+
+    total += itemTotal;
 
 
     products += `
@@ -543,8 +712,7 @@ function showCart() {
           </strong>
 
           <strong>
-            ${(item.price * item.quantity)
-              .toLocaleString("tr-TR")} TL
+            ${itemTotal.toLocaleString("tr-TR")} TL
           </strong>
 
         </div>
@@ -556,6 +724,7 @@ function showCart() {
         ">
           ${item.price.toLocaleString("tr-TR")} TL / adet
         </div>
+
 
         <div style="
           display:flex;
@@ -575,7 +744,9 @@ function showCart() {
             −
           </button>
 
-          <strong style="font-size:17px;">
+          <strong style="
+            font-size:17px;
+          ">
             ${item.quantity}
           </strong>
 
@@ -591,6 +762,7 @@ function showCart() {
 
         </div>
 
+
         <button
           onclick="removeFromCart(${index})"
         >
@@ -603,7 +775,9 @@ function showCart() {
   });
 
 
-  if (cart.length === 0) {
+  if (
+    cart.length === 0
+  ) {
 
     products =
       "<p>Sepetiniz boş.</p>";
@@ -617,10 +791,13 @@ function showCart() {
 
     ${products}
 
-    <h3 style="margin-top:20px;">
+    <h3 style="
+      margin-top:20px;
+    ">
       Toplam:
       ${total.toLocaleString("tr-TR")} TL
     </h3>
+
 
     ${
       cart.length > 0
@@ -634,12 +811,14 @@ function showCart() {
         : ""
     }
 
+
     <button
       class="back"
       onclick="showMenu()"
     >
       Menüye Dön
     </button>
+
 
     <button
       class="back"
@@ -698,6 +877,7 @@ function getTomorrowDate() {
 
   const tomorrow =
     new Date();
+
 
   tomorrow.setDate(
     tomorrow.getDate() + 1
@@ -1364,7 +1544,9 @@ async function showOrders() {
 
   document.getElementById("home").innerHTML = `
 
-    <h2>Siparişlerim</h2>
+    <h2>
+      Siparişlerim
+    </h2>
 
     ${orderList}
 
@@ -1400,7 +1582,9 @@ async function showAdminPanel() {
 
     document.getElementById("home").innerHTML = `
 
-      <h2>Yönetici Paneli</h2>
+      <h2>
+        Yönetici Paneli
+      </h2>
 
       <p>
         Bu alana erişim yetkiniz yok.
@@ -1808,31 +1992,52 @@ async function loadAdminOrders() {
                   border-bottom:1px solid #ccc;
                 ">
 
-                  <th style="padding:7px;text-align:left;">
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
                     Müşteri
                   </th>
 
-                  <th style="padding:7px;text-align:left;">
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
                     Telefon
                   </th>
 
-                  <th style="padding:7px;text-align:left;">
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
                     Mahalle
                   </th>
 
-                  <th style="padding:7px;text-align:left;">
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
                     Adres
                   </th>
 
-                  <th style="padding:7px;text-align:left;">
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
                     Ürün
                   </th>
 
-                  <th style="padding:7px;text-align:center;">
+                  <th style="
+                    padding:7px;
+                    text-align:center;
+                  ">
                     Adet
                   </th>
 
-                  <th style="padding:7px;text-align:right;">
+                  <th style="
+                    padding:7px;
+                    text-align:right;
+                  ">
                     Tutar
                   </th>
 
