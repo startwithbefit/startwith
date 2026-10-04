@@ -1592,42 +1592,30 @@ async function createOrder() {
     return;
   }
 
-  // orders.delivery_slot_id boş bırakılamadığı için seçilen tarih + saat için
-  // delivery_slots kaydını buluyoruz; yoksa otomatik oluşturuyoruz.
-  let { data: deliverySlot, error: slotLookupError } = await supabaseClient
-    .from("delivery_slots")
-    .select("id, slot_date, start_time, end_time, capacity")
-    .eq("slot_date", deliveryDate)
-    .eq("start_time", startTime)
-    .eq("end_time", endTime)
-    .maybeSingle();
+  // delivery_slots tablosuna müşteriden doğrudan INSERT yapmıyoruz.
+  // RLS güvenliği korunurken Supabase'deki güvenli RPC fonksiyonu
+  // seçilen tarih + saat kaydını bulur veya kapasitesi 3 olacak şekilde oluşturur.
+  const { data: slotRpcData, error: slotRpcError } = await supabaseClient
+    .rpc("get_or_create_delivery_slot", {
+      p_slot_date: deliveryDate,
+      p_start_time: startTime,
+      p_end_time: endTime
+    });
 
-  if (slotLookupError) {
+  if (slotRpcError) {
     message.innerText =
-      "Teslimat saati kontrolünde hata oluştu: " + slotLookupError.message;
+      "Teslimat saati hazırlanamadı: " + slotRpcError.message;
     return;
   }
 
-  if (!deliverySlot) {
-    const { data: createdSlot, error: slotCreateError } = await supabaseClient
-      .from("delivery_slots")
-      .insert([{
-        slot_date: deliveryDate,
-        start_time: startTime,
-        end_time: endTime,
-        capacity: slotCapacity
-      }])
-      .select("id, slot_date, start_time, end_time, capacity")
-      .single();
+  const deliverySlot = Array.isArray(slotRpcData)
+    ? slotRpcData[0]
+    : slotRpcData;
 
-    if (slotCreateError) {
-      message.innerText =
-        "Seçilen tarih için teslimat saati oluşturulamadı: " +
-        slotCreateError.message;
-      return;
-    }
-
-    deliverySlot = createdSlot;
+  if (!deliverySlot || !deliverySlot.id) {
+    message.innerText =
+      "Teslimat saati hazırlanamadı. Lütfen farklı bir saat seçip tekrar deneyin.";
+    return;
   }
 
 
