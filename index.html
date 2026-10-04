@@ -150,6 +150,11 @@
     <input id="loginEmail" type="email" placeholder="E-posta">
     <input id="loginPassword" type="password" placeholder="Şifre">
 
+    <label style="display:flex;align-items:center;gap:9px;margin:10px 0 16px;cursor:pointer;font-size:14px;color:#596158;">
+      <input id="rememberMe" type="checkbox" style="width:auto;margin:0;accent-color:#6f8f63;">
+      <span>Beni Hatırla</span>
+    </label>
+
     <button onclick="login()">Giriş Yap</button>
     <button class="secondary" onclick="showRegister()">Üye Ol</button>
     <button class="back" onclick="goHome()">Geri</button>
@@ -451,7 +456,7 @@ function createStartwithIntro() {
     event => {
       event.stopPropagation();
       closeIntro();
-      showLogin();
+      openStartwithAfterIntro();
     }
   );
 
@@ -477,6 +482,32 @@ if (
 
 }
 
+
+/* =====================================================
+   OTURUM / BENİ HATIRLA
+===================================================== */
+
+async function openStartwithAfterIntro() {
+  const { data } = await supabaseClient.auth.getSession();
+
+  if (data?.session) {
+    showHome();
+  } else {
+    showLogin();
+  }
+}
+
+function fillRememberedEmail() {
+  const emailInput = document.getElementById("loginEmail");
+  const rememberInput = document.getElementById("rememberMe");
+  if (!emailInput || !rememberInput) return;
+
+  const savedEmail = localStorage.getItem("startwithRememberedEmail");
+  if (savedEmail) {
+    emailInput.value = savedEmail;
+    rememberInput.checked = true;
+  }
+}
 
 /* =====================================================
    KAYIT / GİRİŞ EKRANLARI
@@ -511,6 +542,8 @@ function showLogin() {
   document
     .getElementById("loginForm")
     .style.display = "block";
+
+  fillRememberedEmail();
 }
 
 
@@ -671,6 +704,14 @@ async function login() {
       "loginMessage"
     );
 
+  const rememberMe =
+    document.getElementById("rememberMe")?.checked;
+
+  if (rememberMe && email) {
+    localStorage.setItem("startwithRememberedEmail", email);
+  } else {
+    localStorage.removeItem("startwithRememberedEmail");
+  }
 
   message.innerText =
     "Giriş yapılıyor...";
@@ -766,6 +807,14 @@ async function showHome() {
 
       <button
         class="secondary"
+        onclick="showProfile()"
+      >
+        Profilim
+      </button>
+
+
+      <button
+        class="secondary"
         onclick="showOrders()"
       >
         Siparişlerim
@@ -802,6 +851,235 @@ async function showHome() {
 
 }
 
+
+/* =====================================================
+   PROFİL VE ADRESLER
+===================================================== */
+
+async function ensureInitialAddress(user) {
+  const { data: existing, error } = await supabaseClient
+    .from("customer_addresses")
+    .select("id")
+    .eq("user_id", user.id)
+    .limit(1);
+
+  if (error || (existing && existing.length > 0)) return;
+
+  const neighborhood = user.user_metadata?.neighborhood;
+  const address = user.user_metadata?.address;
+
+  if (neighborhood && address && ["Batıkent", "Çamlıca"].includes(neighborhood)) {
+    await supabaseClient.from("customer_addresses").insert([{
+      user_id: user.id,
+      title: "Ev",
+      neighborhood,
+      address,
+      is_default: true
+    }]);
+  }
+}
+
+async function showProfile() {
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if (userError || !user) { showLogin(); return; }
+
+  await ensureInitialAddress(user);
+
+  const { data: addresses, error } = await supabaseClient
+    .from("customer_addresses")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("is_default", { ascending: false })
+    .order("created_at", { ascending: true });
+
+  let addressHtml = "";
+  if (error) {
+    addressHtml = `<p>Adresler yüklenemedi: ${escapeHtml(error.message)}</p>`;
+  } else if (!addresses || addresses.length === 0) {
+    addressHtml = `<p>Henüz kayıtlı adresiniz yok.</p>`;
+  } else {
+    addressHtml = addresses.map(a => `
+      <div style="background:#fff;padding:14px;border-radius:14px;margin:10px 0;border:1px solid #e6e0d5;">
+        <strong>${escapeHtml(a.title)}${a.is_default ? " · Varsayılan" : ""}</strong>
+        <p style="margin:7px 0;">${escapeHtml(a.neighborhood)} · ${escapeHtml(a.address)}</p>
+        <button class="secondary" onclick="showAddressForm('${a.id}')">Düzenle</button>
+        ${!a.is_default ? `<button class="secondary" onclick="setDefaultAddress('${a.id}')">Varsayılan Yap</button>` : ""}
+        <button class="back" onclick="deleteAddress('${a.id}')">Sil</button>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("home").innerHTML = `
+    <h2>Profilim</h2>
+    <div style="background:#fff;padding:16px;border-radius:14px;margin-bottom:16px;">
+      <label>Ad</label>
+      <input id="profileFirstName" value="${escapeHtml(user.user_metadata?.first_name || "")}">
+      <label>Soyad</label>
+      <input id="profileLastName" value="${escapeHtml(user.user_metadata?.last_name || "")}">
+      <label>Telefon</label>
+      <input id="profilePhone" value="${escapeHtml(user.user_metadata?.phone || "")}">
+      <label>E-posta</label>
+      <input value="${escapeHtml(user.email || "")}" disabled>
+      <button onclick="saveProfile()">Kişisel Bilgileri Kaydet</button>
+      <p id="profileMessage" style="text-align:center;"></p>
+    </div>
+
+    <h3>Adreslerim</h3>
+    ${addressHtml}
+    <button onclick="showAddressForm()">+ Yeni Adres Ekle</button>
+    <button class="back" onclick="showHome()">Ana Sayfa</button>
+  `;
+}
+
+async function saveProfile() {
+  const message = document.getElementById("profileMessage");
+  const firstName = document.getElementById("profileFirstName").value.trim();
+  const lastName = document.getElementById("profileLastName").value.trim();
+  const phone = document.getElementById("profilePhone").value.trim();
+  if (!firstName || !lastName || !phone) {
+    message.innerText = "Lütfen ad, soyad ve telefon alanlarını doldurun.";
+    return;
+  }
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const { error } = await supabaseClient.auth.updateUser({
+    data: { ...(user?.user_metadata || {}), first_name: firstName, last_name: lastName, phone }
+  });
+  message.innerText = error ? "Bilgiler kaydedilemedi: " + error.message : "Bilgileriniz kaydedildi. ✓";
+}
+
+async function showAddressForm(addressId = null) {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) { showLogin(); return; }
+
+  let addressData = null;
+  if (addressId) {
+    const { data, error } = await supabaseClient
+      .from("customer_addresses")
+      .select("*")
+      .eq("id", addressId)
+      .eq("user_id", user.id)
+      .single();
+    if (error) { alert("Adres yüklenemedi: " + error.message); return; }
+    addressData = data;
+  }
+
+  document.getElementById("home").innerHTML = `
+    <h2>${addressId ? "Adresi Düzenle" : "Yeni Adres"}</h2>
+    <label>Adres Başlığı</label>
+    <input id="addressTitle" maxlength="40" placeholder="Ev, İş, Annemler..." value="${escapeHtml(addressData?.title || "")}">
+    <label>Mahalle</label>
+    <select id="addressNeighborhood">
+      <option value="">Mahalle seçin</option>
+      <option value="Batıkent" ${addressData?.neighborhood === "Batıkent" ? "selected" : ""}>Batıkent</option>
+      <option value="Çamlıca" ${addressData?.neighborhood === "Çamlıca" ? "selected" : ""}>Çamlıca</option>
+    </select>
+    <label>Açık Adres</label>
+    <textarea id="addressText" maxlength="500" style="width:100%;min-height:100px;box-sizing:border-box;border:1px solid #d8d2c5;border-radius:12px;padding:12px;font:inherit;resize:vertical;">${escapeHtml(addressData?.address || "")}</textarea>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:14px;">
+      <input type="checkbox" id="addressDefault" ${addressData?.is_default ? "checked" : ""} style="width:auto;"> Varsayılan adresim olsun
+    </label>
+    <button onclick="saveAddress(${addressId ? `'${addressId}'` : "null"})">Kaydet</button>
+    <button class="back" onclick="showProfile()">Profilime Dön</button>
+    <p id="addressMessage" style="text-align:center;"></p>
+  `;
+}
+
+async function saveAddress(addressId = null) {
+  const message = document.getElementById("addressMessage");
+  const title = document.getElementById("addressTitle").value.trim();
+  const neighborhood = document.getElementById("addressNeighborhood").value;
+  const address = document.getElementById("addressText").value.trim();
+  const wantsDefault = document.getElementById("addressDefault").checked;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user || !title || !neighborhood || !address) {
+    message.innerText = "Lütfen tüm adres alanlarını doldurun.";
+    return;
+  }
+  if (!["Batıkent", "Çamlıca"].includes(neighborhood)) {
+    message.innerText = "Şimdilik yalnızca Batıkent ve Çamlıca mahallelerine teslimat yapıyoruz.";
+    return;
+  }
+
+  let makeDefault = wantsDefault;
+  if (!addressId) {
+    const { count } = await supabaseClient.from("customer_addresses")
+      .select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    if ((count || 0) === 0) makeDefault = true;
+  }
+
+  if (makeDefault) {
+    const { error: unsetError } = await supabaseClient.from("customer_addresses")
+      .update({ is_default: false }).eq("user_id", user.id);
+    if (unsetError) { message.innerText = "Adres kaydedilemedi: " + unsetError.message; return; }
+  }
+
+  let result;
+  if (addressId) {
+    result = await supabaseClient.from("customer_addresses")
+      .update({ title, neighborhood, address, is_default: makeDefault })
+      .eq("id", addressId).eq("user_id", user.id);
+  } else {
+    result = await supabaseClient.from("customer_addresses")
+      .insert([{ user_id: user.id, title, neighborhood, address, is_default: makeDefault }]);
+  }
+
+  if (result.error) { message.innerText = "Adres kaydedilemedi: " + result.error.message; return; }
+  await showProfile();
+}
+
+async function setDefaultAddress(addressId) {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+  const { error: unsetError } = await supabaseClient.from("customer_addresses")
+    .update({ is_default: false }).eq("user_id", user.id);
+  if (unsetError) { alert("Adres güncellenemedi: " + unsetError.message); return; }
+  const { error } = await supabaseClient.from("customer_addresses")
+    .update({ is_default: true }).eq("id", addressId).eq("user_id", user.id);
+  if (error) alert("Adres güncellenemedi: " + error.message);
+  else showProfile();
+}
+
+async function deleteAddress(addressId) {
+  if (!confirm("Bu adresi silmek istediğinize emin misiniz?")) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const { data: target } = await supabaseClient.from("customer_addresses")
+    .select("is_default").eq("id", addressId).eq("user_id", user.id).single();
+  const { error } = await supabaseClient.from("customer_addresses")
+    .delete().eq("id", addressId).eq("user_id", user.id);
+  if (error) { alert("Adres silinemedi: " + error.message); return; }
+
+  if (target?.is_default) {
+    const { data: remaining } = await supabaseClient.from("customer_addresses")
+      .select("id").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1);
+    if (remaining?.[0]) await supabaseClient.from("customer_addresses")
+      .update({ is_default: true }).eq("id", remaining[0].id).eq("user_id", user.id);
+  }
+  showProfile();
+}
+
+async function loadCheckoutAddresses() {
+  const select = document.getElementById("deliveryAddress");
+  const info = document.getElementById("deliveryAddressInfo");
+  if (!select) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+  await ensureInitialAddress(user);
+  const { data: addresses, error } = await supabaseClient.from("customer_addresses")
+    .select("*").eq("user_id", user.id).order("is_default", { ascending: false }).order("created_at", { ascending: true });
+  if (error) {
+    select.innerHTML = `<option value="">Adresler yüklenemedi</option>`;
+    if (info) info.innerText = error.message;
+    return;
+  }
+  if (!addresses || addresses.length === 0) {
+    select.innerHTML = `<option value="">Önce profilinizden adres ekleyin</option>`;
+    if (info) info.innerHTML = `Kayıtlı adresiniz bulunmuyor. <button class="secondary" onclick="showProfile()">Profilime Git</button>`;
+    return;
+  }
+  select.innerHTML = addresses.map(a => `<option value="${a.id}" ${a.is_default ? "selected" : ""}>${escapeHtml(a.title)} · ${escapeHtml(a.neighborhood)} · ${escapeHtml(a.address)}</option>`).join("");
+  if (info) info.innerText = "Siparişiniz seçtiğiniz adrese teslim edilecektir.";
+}
 
 /* =====================================================
    ÜRÜNLER
@@ -1320,6 +1598,12 @@ function showOrderForm() {
       <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
     </div>
 
+    <label>Teslimat Adresi</label>
+    <select id="deliveryAddress">
+      <option value="">Adresler yükleniyor...</option>
+    </select>
+    <div id="deliveryAddressInfo" style="margin-top:8px;font-size:13px;color:#6f756c;line-height:1.5;"></div>
+
     <label>Teslimat Tarihi</label>
     <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability()">
 
@@ -1342,6 +1626,7 @@ function showOrderForm() {
     <p id="orderMessage" style="text-align:center;margin-top:15px;"></p>
   `;
 
+  loadCheckoutAddresses();
   loadSlotAvailability();
 }
 
@@ -1421,6 +1706,7 @@ async function createOrder() {
 
 
   const orderNote = (document.getElementById("orderNote")?.value || "").trim();
+  const selectedAddressId = document.getElementById("deliveryAddress")?.value || "";
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -1465,16 +1751,25 @@ async function createOrder() {
   }
 
 
-  const neighborhood =
-    user
-      .user_metadata
-      ?.neighborhood;
+  if (!selectedAddressId) {
+    message.innerText = "Lütfen teslimat adresi seçin.";
+    return;
+  }
 
+  const { data: selectedAddress, error: addressError } = await supabaseClient
+    .from("customer_addresses")
+    .select("id,title,neighborhood,address")
+    .eq("id", selectedAddressId)
+    .eq("user_id", user.id)
+    .single();
 
-  const address =
-    user
-      .user_metadata
-      ?.address;
+  if (addressError || !selectedAddress) {
+    message.innerText = "Teslimat adresi bulunamadı. Lütfen profilinizden adresinizi kontrol edin.";
+    return;
+  }
+
+  const neighborhood = selectedAddress.neighborhood;
+  const address = selectedAddress.address;
 
 
   const customerName =
@@ -1508,19 +1803,6 @@ async function createOrder() {
       .user_metadata
       ?.phone ||
     "";
-
-
-  if (
-    !neighborhood ||
-    !address
-  ) {
-
-    message.innerText =
-      "Adres bilgileriniz eksik. Lütfen çıkış yapıp tekrar giriş yapın.";
-
-    return;
-
-  }
 
 
   if (!selectedDate) {
@@ -1711,6 +1993,9 @@ async function createOrder() {
           address:
             address,
 
+          address_id:
+            selectedAddress.id,
+
           customer_name:
             customerName,
 
@@ -1762,7 +2047,7 @@ async function createOrder() {
         <div class="order-summary">
           <p><strong>Teslimat günü:</strong> ${deliveryDate}</p>
           <p><strong>Teslimat saati:</strong> ${slot}</p>
-          <p><strong>Adres:</strong> ${address}</p>
+          <p><strong>Adres:</strong> ${escapeHtml(selectedAddress.title)} · ${escapeHtml(neighborhood)} · ${escapeHtml(address)}</p>
           <p><strong>Sipariş:</strong> ${productSummary}</p>
           ${orderNote ? `<p><strong>Sipariş notu:</strong> ${escapeHtml(orderNote)}</p>` : ``}
           <p><strong>Toplam:</strong> ${total.toLocaleString("tr-TR")} TL</p>
