@@ -267,21 +267,13 @@ function showHome() {
 
     <p>Startwith'e hoş geldin. 🥗</p>
 
-    <button onclick="showMenu()">
-      Kahvaltı Menüsü
-    </button>
+    <button onclick="showMenu()">Kahvaltı Menüsü</button>
 
-    <button class="secondary" onclick="showCart()">
-      Sepetim
-    </button>
+    <button class="secondary" onclick="showCart()">Sepetim</button>
 
-    <button class="secondary" onclick="showOrders()">
-      Siparişlerim
-    </button>
+    <button class="secondary" onclick="showOrders()">Siparişlerim</button>
 
-    <button class="back" onclick="logout()">
-      Çıkış Yap
-    </button>
+    <button class="back" onclick="logout()">Çıkış Yap</button>
   `;
 }
 
@@ -311,9 +303,7 @@ function showMenu() {
 
       <strong>249 TL</strong>
 
-      <button onclick="addToCart()">
-        Sepete Ekle
-      </button>
+      <button onclick="addToCart()">Sepete Ekle</button>
 
     </div>
 
@@ -508,15 +498,11 @@ function showOrderForm() {
       Teslimat günü: <strong>Yarın</strong>
     </p>
 
-    <label>
-      Teslimat Saati
-    </label>
+    <label>Teslimat Saati</label>
 
     <select id="deliverySlot">
 
-      <option value="">
-        Teslimat saati seçin
-      </option>
+      <option value="">Teslimat saati seçin</option>
 
       <option value="07:00-07:30">07:00 - 07:30</option>
       <option value="07:30-08:00">07:30 - 08:00</option>
@@ -543,7 +529,6 @@ function showOrderForm() {
     ">
 
       <strong>Ödeme</strong>
-
       <p>Kapıda ödeme</p>
 
     </div>
@@ -576,42 +561,39 @@ async function createOrder() {
     document.getElementById("orderMessage");
 
   if (!slot) {
-
     message.innerText =
       "Lütfen teslimat saati seçin.";
-
     return;
   }
 
 
-  /* Kullanıcının oturumunu al */
+  /* Kullanıcı */
 
   const {
     data: { user },
     error: userError
   } = await supabaseClient.auth.getUser();
 
-
   if (userError || !user) {
-
     message.innerText =
       "Oturumunuz bulunamadı. Lütfen tekrar giriş yapın.";
-
     return;
   }
 
 
-  /* Kullanıcının mahallesini al */
+  /* Kullanıcı bilgileri */
 
   const neighborhood =
     user.user_metadata?.neighborhood;
 
+  const address =
+    user.user_metadata?.address;
 
-  if (!neighborhood) {
+
+  if (!neighborhood || !address) {
 
     message.innerText =
-      "Adres bilgilerinizde mahalle bilgisi bulunamadı. " +
-      "Lütfen çıkış yapıp tekrar giriş yapın.";
+      "Adres bilgileriniz eksik. Lütfen çıkış yapıp tekrar giriş yapın.";
 
     return;
   }
@@ -621,9 +603,7 @@ async function createOrder() {
 
   const now = new Date();
 
-  const currentHour = now.getHours();
-
-  if (currentHour >= 18) {
+  if (now.getHours() >= 18) {
 
     message.innerText =
       "Bu gün için online sipariş süresi dolmuştur. " +
@@ -637,7 +617,7 @@ async function createOrder() {
   const deliveryDate = getTomorrowDate();
 
 
-  /* Seçilen saati başlangıç ve bitiş olarak ayır */
+  /* Saat */
 
   const slotParts = slot.split("-");
 
@@ -649,9 +629,7 @@ async function createOrder() {
     "Teslimat saati kontrol ediliyor...";
 
 
-  /* =========================
-     TESLİMAT SLOTUNU BUL
-  ========================= */
+  /* Teslimat slotu */
 
   const {
     data: deliverySlot,
@@ -685,9 +663,7 @@ async function createOrder() {
   }
 
 
-  /* =========================
-     KAPASİTE KONTROLÜ
-  ========================= */
+  /* Kapasite */
 
   const {
     count: orderCount,
@@ -699,6 +675,7 @@ async function createOrder() {
       head: true
     })
     .eq("delivery_slot_id", deliverySlot.id);
+
 
   if (countError) {
 
@@ -722,18 +699,14 @@ async function createOrder() {
   }
 
 
-  /* =========================
-     SEPET TOPLAMI
-  ========================= */
+  /* Sepet */
 
   let total = 0;
   let quantity = 0;
 
   cart.forEach(item => {
-
     total += item.price * item.quantity;
     quantity += item.quantity;
-
   });
 
 
@@ -751,10 +724,10 @@ async function createOrder() {
 
 
   /* =========================
-     SİPARİŞİ OLUŞTUR
+     SİPARİŞİ KAYDET
   ========================= */
 
-  const { data, error } =
+  const { error } =
     await supabaseClient
       .from("orders")
       .insert([
@@ -767,10 +740,10 @@ async function createOrder() {
           delivery_slot: slot,
           delivery_slot_id: deliverySlot.id,
           neighborhood: neighborhood,
+          address: address,
           status: "new"
         }
-      ])
-      .select();
+      ]);
 
 
   if (error) {
@@ -782,6 +755,8 @@ async function createOrder() {
     return;
   }
 
+
+  /* Başarılı */
 
   cart = [];
 
@@ -814,6 +789,11 @@ async function createOrder() {
       <p>
         <strong>Mahalle:</strong>
         ${neighborhood}
+      </p>
+
+      <p>
+        <strong>Adres:</strong>
+        ${address}
       </p>
 
       <p>
@@ -941,6 +921,11 @@ async function showOrders() {
           <p>
             Mahalle:
             ${order.neighborhood || "-"}
+          </p>
+
+          <p>
+            Adres:
+            ${order.address || "-"}
           </p>
 
           <p>
