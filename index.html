@@ -217,6 +217,34 @@ function createStartwithIntro() {
         0 2px 18px rgba(0,0,0,.35);
 
       user-select: none;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    #startwithIntro .intro-title span {
+      display: block;
+      white-space: nowrap;
+    }
+
+    #startwithIntro .intro-order-button {
+      position: absolute;
+      left: 50%;
+      bottom: max(42px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 4;
+      width: min(82vw, 320px);
+      padding: 15px 24px;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 999px;
+      background: rgba(0,0,0,.30);
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     #startwithIntro.fade-out {
@@ -280,8 +308,11 @@ function createStartwithIntro() {
 
 
     <div class="intro-title">
-      START WITH.                   BE FIT.
+      <span>START WITH.</span>
+      <span>BE FIT.</span>
     </div>
+
+    <button class="intro-order-button" type="button">SİPARİŞ VER</button>
 
   `;
 
@@ -382,17 +413,16 @@ function createStartwithIntro() {
   }
 
 
-  intro.addEventListener(
+  const orderButton =
+    intro.querySelector(
+      ".intro-order-button"
+    );
+
+  orderButton.addEventListener(
     "click",
-    closeIntro
-  );
-
-
-  intro.addEventListener(
-    "touchend",
-    closeIntro,
-    {
-      passive: true
+    event => {
+      event.stopPropagation();
+      closeIntro();
     }
   );
 
