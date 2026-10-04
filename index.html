@@ -144,46 +144,386 @@ const supabaseClient = supabase.createClient(
 );
 
 let cart = [];
+let introVideoIndex = 0;
 
 
-/* =========================
-   ANA SAYFA
-========================= */
+/* =====================================================
+   START WITH - VIDEO AÇILIŞ EKRANI
+===================================================== */
+
+function createStartwithIntro() {
+
+  if (document.getElementById("startwithIntro")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+
+  style.innerHTML = `
+    #startwithIntro {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      background: #000;
+      overflow: hidden;
+      z-index: 999999;
+      cursor: pointer;
+    }
+
+    #startwithIntro .intro-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      filter: brightness(42%) saturate(70%) contrast(90%);
+      transition: opacity 1.2s ease;
+    }
+
+    #startwithIntro .intro-video.active {
+      opacity: 1;
+    }
+
+    #startwithIntro .intro-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.22);
+      z-index: 2;
+    }
+
+    #startwithIntro .intro-title {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+
+      color: white;
+
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(34px,8vw,72px);
+      font-weight: 700;
+
+      letter-spacing: 2px;
+
+      text-align: center;
+      text-transform: uppercase;
+
+      text-shadow:
+        0 2px 18px rgba(0,0,0,.35);
+
+      user-select: none;
+    }
+
+    #startwithIntro.fade-out {
+      opacity: 0;
+      transition: opacity .55s ease;
+      pointer-events: none;
+    }
+  `;
+
+  document.head.appendChild(style);
+
+
+  const intro =
+    document.createElement("div");
+
+  intro.id = "startwithIntro";
+
+
+  intro.innerHTML = `
+
+    <video
+      class="intro-video active"
+      muted
+      playsinline
+      preload="auto"
+    >
+      <source
+        src="video1.mp4"
+        type="video/mp4"
+      >
+    </video>
+
+
+    <video
+      class="intro-video"
+      muted
+      playsinline
+      preload="auto"
+    >
+      <source
+        src="video2.mp4"
+        type="video/mp4"
+      >
+    </video>
+
+
+    <video
+      class="intro-video"
+      muted
+      playsinline
+      preload="auto"
+    >
+      <source
+        src="video3.mp4"
+        type="video/mp4"
+      >
+    </video>
+
+
+    <div class="intro-overlay"></div>
+
+
+    <div class="intro-title">
+      START WITH. BE FIT.
+    </div>
+
+  `;
+
+
+  document.body.appendChild(intro);
+
+
+  const videos =
+    intro.querySelectorAll(
+      ".intro-video"
+    );
+
+
+  function playIntroVideo(index) {
+
+    videos.forEach(
+      (video, i) => {
+
+        if (i === index) {
+
+          video.classList.add(
+            "active"
+          );
+
+          try {
+            video.currentTime = 0;
+          } catch (e) {}
+
+          video
+            .play()
+            .catch(() => {});
+
+        } else {
+
+          video.classList.remove(
+            "active"
+          );
+
+          video.pause();
+
+          try {
+            video.currentTime = 0;
+          } catch (e) {}
+
+        }
+
+      }
+    );
+
+  }
+
+
+  videos.forEach(
+    (video, index) => {
+
+      video.addEventListener(
+        "ended",
+        () => {
+
+          introVideoIndex =
+            (index + 1) %
+            videos.length;
+
+          playIntroVideo(
+            introVideoIndex
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  function closeIntro() {
+
+    intro.classList.add(
+      "fade-out"
+    );
+
+
+    videos.forEach(
+      video => {
+        video.pause();
+      }
+    );
+
+
+    setTimeout(
+      () => {
+
+        intro.remove();
+
+      },
+      600
+    );
+
+  }
+
+
+  intro.addEventListener(
+    "click",
+    closeIntro
+  );
+
+
+  intro.addEventListener(
+    "touchend",
+    closeIntro,
+    {
+      passive: true
+    }
+  );
+
+
+  playIntroVideo(0);
+
+}
+
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    createStartwithIntro
+  );
+
+} else {
+
+  createStartwithIntro();
+
+}
+
+
+/* =====================================================
+   KAYIT / GİRİŞ EKRANLARI
+===================================================== */
 
 function showRegister() {
-  document.getElementById("home").style.display = "none";
-  document.getElementById("loginForm").style.display = "none";
-  document.getElementById("registerForm").style.display = "block";
+
+  document
+    .getElementById("home")
+    .style.display = "none";
+
+  document
+    .getElementById("loginForm")
+    .style.display = "none";
+
+  document
+    .getElementById("registerForm")
+    .style.display = "block";
 }
+
 
 function showLogin() {
-  document.getElementById("home").style.display = "none";
-  document.getElementById("registerForm").style.display = "none";
-  document.getElementById("loginForm").style.display = "block";
+
+  document
+    .getElementById("home")
+    .style.display = "none";
+
+  document
+    .getElementById("registerForm")
+    .style.display = "none";
+
+  document
+    .getElementById("loginForm")
+    .style.display = "block";
 }
+
 
 function goHome() {
-  document.getElementById("home").style.display = "block";
-  document.getElementById("registerForm").style.display = "none";
-  document.getElementById("loginForm").style.display = "none";
+
+  document
+    .getElementById("home")
+    .style.display = "block";
+
+  document
+    .getElementById("registerForm")
+    .style.display = "none";
+
+  document
+    .getElementById("loginForm")
+    .style.display = "none";
 }
 
 
-/* =========================
+/* =====================================================
    KAYIT
-========================= */
+===================================================== */
 
 async function register() {
 
-  const firstName = document.getElementById("firstName").value.trim();
-  const lastName = document.getElementById("lastName").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const neighborhood = document.getElementById("neighborhood").value.trim();
-  const address = document.getElementById("address").value.trim();
-  const password = document.getElementById("password").value;
+  const firstName =
+    document
+      .getElementById("firstName")
+      .value
+      .trim();
 
-  const message = document.getElementById("registerMessage");
+  const lastName =
+    document
+      .getElementById("lastName")
+      .value
+      .trim();
+
+  const phone =
+    document
+      .getElementById("phone")
+      .value
+      .trim();
+
+  const email =
+    document
+      .getElementById("email")
+      .value
+      .trim();
+
+  const neighborhood =
+    document
+      .getElementById("neighborhood")
+      .value
+      .trim();
+
+  const address =
+    document
+      .getElementById("address")
+      .value
+      .trim();
+
+  const password =
+    document
+      .getElementById("password")
+      .value;
+
+
+  const message =
+    document.getElementById(
+      "registerMessage"
+    );
+
 
   if (
     !firstName ||
@@ -194,296 +534,478 @@ async function register() {
     !address ||
     !password
   ) {
-    message.innerText = "Lütfen tüm alanları doldurun.";
+
+    message.innerText =
+      "Lütfen tüm alanları doldurun.";
+
     return;
   }
 
-  message.innerText = "Kayıt yapılıyor...";
 
-  const { error } = await supabaseClient.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone,
-        neighborhood: neighborhood,
-        address: address
-      }
-    }
-  });
+  message.innerText =
+    "Kayıt yapılıyor...";
+
+
+  const { error } =
+    await supabaseClient
+      .auth
+      .signUp({
+
+        email: email,
+
+        password: password,
+
+        options: {
+
+          data: {
+
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone,
+            neighborhood: neighborhood,
+            address: address
+
+          }
+
+        }
+
+      });
+
 
   if (error) {
-    message.innerText = "Hata: " + error.message;
+
+    message.innerText =
+      "Hata: " +
+      error.message;
+
     return;
   }
+
 
   message.innerText =
     "Kayıt başarılı! E-posta adresinizi kontrol edin.";
+
 }
 
 
-/* =========================
+/* =====================================================
    GİRİŞ
-========================= */
+===================================================== */
 
 async function login() {
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+  const email =
+    document
+      .getElementById("loginEmail")
+      .value
+      .trim();
 
-  const message = document.getElementById("loginMessage");
 
-  message.innerText = "Giriş yapılıyor...";
+  const password =
+    document
+      .getElementById("loginPassword")
+      .value;
+
+
+  const message =
+    document.getElementById(
+      "loginMessage"
+    );
+
+
+  message.innerText =
+    "Giriş yapılıyor...";
+
 
   const { error } =
-    await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
+    await supabaseClient
+      .auth
+      .signInWithPassword({
+
+        email: email,
+        password: password
+
+      });
+
 
   if (error) {
-    message.innerText = "Hata: " + error.message;
+
+    message.innerText =
+      "Hata: " +
+      error.message;
+
     return;
   }
 
+
   showHome();
+
 }
 
 
-/* =========================
+/* =====================================================
    ANA SAYFA
-========================= */
+===================================================== */
 
 async function showHome() {
 
   const {
     data: { user }
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient
+      .auth
+      .getUser();
+
 
   const isAdmin =
-    user?.user_metadata?.role === "admin";
+    user?.user_metadata?.role ===
+    "admin";
 
-  document.getElementById("registerForm").style.display = "none";
-  document.getElementById("loginForm").style.display = "none";
-  document.getElementById("home").style.display = "block";
 
-  document.getElementById("home").innerHTML = `
-    <h2>start with. be fit</h2>
+  document
+    .getElementById("registerForm")
+    .style.display = "none";
 
-    <p>Sağlıklı güne iyi bir başlangıç.</p>
 
-    <button onclick="showMenu()">
-      Menü
-    </button>
+  document
+    .getElementById("loginForm")
+    .style.display = "none";
 
-    <button class="secondary" onclick="showCart()">
-      Sepetim
-    </button>
 
-    <button class="secondary" onclick="showOrders()">
-      Siparişlerim
-    </button>
+  document
+    .getElementById("home")
+    .style.display = "block";
 
-    ${
-      isAdmin
-        ? `
-          <button
-            onclick="showAdminPanel()"
-            style="
-              background:#222;
-              color:white;
-            "
-          >
-            Yönetici Paneli
-          </button>
-        `
-        : ""
-    }
 
-    <button class="back" onclick="logout()">
-      Çıkış Yap
-    </button>
-  `;
+  document
+    .getElementById("home")
+    .innerHTML = `
+
+      <h2>
+        start with. be fit
+      </h2>
+
+      <p>
+        Sağlıklı güne iyi bir başlangıç.
+      </p>
+
+
+      <button
+        onclick="showMenu()"
+      >
+        Menü
+      </button>
+
+
+      <button
+        class="secondary"
+        onclick="showCart()"
+      >
+        Sepetim
+      </button>
+
+
+      <button
+        class="secondary"
+        onclick="showOrders()"
+      >
+        Siparişlerim
+      </button>
+
+
+      ${
+        isAdmin
+          ? `
+
+            <button
+              onclick="showAdminPanel()"
+              style="
+                background:#222;
+                color:white;
+              "
+            >
+              Yönetici Paneli
+            </button>
+
+          `
+          : ""
+      }
+
+
+      <button
+        class="back"
+        onclick="logout()"
+      >
+        Çıkış Yap
+      </button>
+
+    `;
+
 }
 
 
-/* =========================
-   MENÜ
-========================= */
+/* =====================================================
+   ÜRÜNLER
+===================================================== */
 
 function getProducts() {
 
   return [
 
     {
-      name: "Klasik Kahvaltı",
-      price: 249,
+
+      name:
+        "Klasik Kahvaltı",
+
+      price:
+        249,
+
       description:
         "Organik haşlanmış yumurta, ev yapımı lor peyniri ve çörek otu, kalamata zeytin, kokteyl domates ve iki dilim tam buğday ekmeği."
+
     },
 
+
     {
-      name: "Ege Kahvaltı",
-      price: 269,
+
+      name:
+        "Ege Kahvaltı",
+
+      price:
+        269,
+
       description:
         "Organik haşlanmış yumurta, ev yapımı sepet peyniri, Edremit yeşil ve siyah zeytin, taze mevsimlik yeşillik ve zeytinyağı, iki dilim tam buğday ekmeği."
+
     },
 
+
     {
-      name: "Fit Kahvaltı",
-      price: 279,
+
+      name:
+        "Fit Kahvaltı",
+
+      price:
+        279,
+
       description:
         "İki adet organik yumurtadan omlet, ev yapımı lor peyniri ve çörek otu, ev yapımı salam, kokteyl domates, Çengelköy salatalık ve bir dilim tam buğday ekmeği."
+
     },
 
+
     {
-      name: "Sporcu Kahvaltı",
-      price: 269,
+
+      name:
+        "Sporcu Kahvaltı",
+
+      price:
+        269,
+
       description:
         "İki adet organik yumurtadan omlet, ev yapımı salam, ev yapımı sepet peyniri, pirinç kreması ve iki dilim tam buğday ekmeği."
+
     },
 
+
     {
-      name: "Tatlı Kahvaltı",
-      price: 289,
+
+      name:
+        "Tatlı Kahvaltı",
+
+      price:
+        289,
+
       description:
         "3 adet pancake, akçaağaç şurubu, ev yapımı kaymak, yaban mersini, ahududu ve vanilyalı pirinç kreması."
+
     },
 
+
     {
-      name: "Tam Buğday Ekmeği (400 g)",
-      price: 90,
+
+      name:
+        "Tam Buğday Ekmeği (400 g)",
+
+      price:
+        90,
+
       description:
         "400 gram tam buğday ekmeği."
+
     },
 
+
     {
-      name: "Ev Yapımı Kaymak (100 g)",
-      price: 125,
+
+      name:
+        "Ev Yapımı Kaymak (100 g)",
+
+      price:
+        125,
+
       description:
         "100 gram ev yapımı kaymak."
+
     },
 
+
     {
-      name: "Ev Yapımı Salam (200 g)",
-      price: 110,
+
+      name:
+        "Ev Yapımı Salam (200 g)",
+
+      price:
+        110,
+
       description:
         "200 gram ev yapımı salam."
+
     }
 
   ];
+
 }
 
+
+/* =====================================================
+   MENÜ
+===================================================== */
 
 function showMenu() {
 
   const products =
     getProducts();
 
+
   let menuHtml = "";
 
 
-  products.forEach(product => {
+  products.forEach(
+    product => {
 
-    menuHtml += `
-
-      <div style="
-        background:white;
-        padding:14px;
-        border-radius:8px;
-        margin-top:9px;
-      ">
+      menuHtml += `
 
         <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:flex-start;
-          gap:10px;
+          background:white;
+          padding:14px;
+          border-radius:8px;
+          margin-top:9px;
         ">
 
           <div style="
-            flex:1;
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:10px;
           ">
 
-            <strong style="
-              font-size:16px;
-            ">
-              ${product.name}
-            </strong>
 
             <div style="
-              margin-top:7px;
-              font-size:14px;
-              line-height:1.5;
-              color:#555;
+              flex:1;
             ">
-              ${product.description}
+
+              <strong style="
+                font-size:16px;
+              ">
+                ${product.name}
+              </strong>
+
+
+              <div style="
+                margin-top:7px;
+                font-size:14px;
+                line-height:1.5;
+                color:#555;
+              ">
+
+                ${product.description}
+
+              </div>
+
+
+              <div style="
+                margin-top:8px;
+                font-weight:bold;
+                font-size:15px;
+              ">
+
+                ${
+                  product.price
+                    .toLocaleString(
+                      "tr-TR"
+                    )
+                } TL
+
+              </div>
+
             </div>
 
-            <div style="
-              margin-top:8px;
-              font-weight:bold;
-              font-size:15px;
-            ">
-              ${product.price.toLocaleString("tr-TR")} TL
-            </div>
+
+            <button
+              style="
+                width:auto;
+                margin:0;
+                padding:8px 12px;
+                flex-shrink:0;
+              "
+
+              onclick='showProductDetail(
+                ${JSON.stringify(product.name)},
+                ${product.price},
+                ${JSON.stringify(product.description)}
+              )'
+            >
+
+              Ekle
+
+            </button>
 
           </div>
 
-
-          <button
-            style="
-              width:auto;
-              margin:0;
-              padding:8px 12px;
-              flex-shrink:0;
-            "
-            onclick='showProductDetail(
-              ${JSON.stringify(product.name)},
-              ${product.price},
-              ${JSON.stringify(product.description)}
-            )'
-          >
-            Ekle
-          </button>
-
         </div>
 
-      </div>
+      `;
+
+    }
+  );
+
+
+  document
+    .getElementById("home")
+    .innerHTML = `
+
+      <h2>
+        Menü
+      </h2>
+
+
+      ${menuHtml}
+
+
+      <button
+        class="secondary"
+        onclick="showCart()"
+      >
+        Sepetim
+      </button>
+
+
+      <button
+        class="back"
+        onclick="showHome()"
+      >
+        Ana Sayfa
+      </button>
 
     `;
-  });
 
-
-  document.getElementById("home").innerHTML = `
-
-    <h2>Menü</h2>
-
-    ${menuHtml}
-
-    <button
-      class="secondary"
-      onclick="showCart()"
-    >
-      Sepetim
-    </button>
-
-    <button
-      class="back"
-      onclick="showHome()"
-    >
-      Ana Sayfa
-    </button>
-
-  `;
 }
 
 
-/* =========================
+/* =====================================================
    ÜRÜN DETAY / ADET
-========================= */
+===================================================== */
 
 function showProductDetail(
   name,
@@ -501,133 +1023,188 @@ function showProductDetail(
   ) {
 
     quantityOptions += `
+
       <option value="${i}">
         ${i} adet
       </option>
+
     `;
 
   }
 
 
-  document.getElementById("home").innerHTML = `
-
-    <h2>
-      ${name}
-    </h2>
-
-    <div style="
-      background:white;
-      padding:16px;
-      border-radius:10px;
-      margin-top:15px;
-    ">
-
-      <p style="
-        line-height:1.6;
-        color:#555;
-      ">
-        ${description}
-      </p>
-
-      <p>
-        <strong>
-          Birim fiyat:
-        </strong>
-
-        ${price.toLocaleString("tr-TR")} TL
-      </p>
+  document
+    .getElementById("home")
+    .innerHTML = `
 
 
-      <label>
-        <strong>
-          Adet
-        </strong>
-      </label>
-
-      <select
-        id="productQuantity"
-        onchange="updateProductTotal(${price})"
-        style="
-          margin-top:8px;
-          width:100%;
-        "
-      >
-
-        ${quantityOptions}
-
-      </select>
+      <h2>
+        ${name}
+      </h2>
 
 
       <div style="
-        margin-top:18px;
-        padding-top:15px;
-        border-top:1px solid #eee;
-        font-size:18px;
+        background:white;
+        padding:16px;
+        border-radius:10px;
+        margin-top:15px;
       ">
 
-        <strong>
-          Toplam:
-        </strong>
 
-        <span id="productTotal">
-          ${price.toLocaleString("tr-TR")} TL
-        </span>
+        <p style="
+          line-height:1.6;
+          color:#555;
+        ">
+
+          ${description}
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Birim fiyat:
+          </strong>
+
+          ${
+            price.toLocaleString(
+              "tr-TR"
+            )
+          } TL
+
+        </p>
+
+
+        <label>
+
+          <strong>
+            Adet
+          </strong>
+
+        </label>
+
+
+        <select
+          id="productQuantity"
+
+          onchange="
+            updateProductTotal(
+              ${price}
+            )
+          "
+
+          style="
+            margin-top:8px;
+            width:100%;
+          "
+        >
+
+          ${quantityOptions}
+
+        </select>
+
+
+        <div style="
+          margin-top:18px;
+          padding-top:15px;
+          border-top:1px solid #eee;
+          font-size:18px;
+        ">
+
+
+          <strong>
+            Toplam:
+          </strong>
+
+
+          <span id="productTotal">
+
+            ${
+              price.toLocaleString(
+                "tr-TR"
+              )
+            } TL
+
+          </span>
+
+        </div>
+
+
+        <button
+
+          onclick='addProductToCart(
+            ${JSON.stringify(name)},
+            ${price}
+          )'
+
+        >
+
+          Sepete Ekle
+
+        </button>
 
       </div>
 
 
       <button
-        onclick='addProductToCart(
-          ${JSON.stringify(name)},
-          ${price}
-        )'
+        class="back"
+        onclick="showMenu()"
       >
-        Sepete Ekle
+
+        Menüye Dön
+
       </button>
 
-    </div>
+    `;
 
-
-    <button
-      class="back"
-      onclick="showMenu()"
-    >
-      Menüye Dön
-    </button>
-
-  `;
 }
 
 
-/* =========================
-   ÜRÜN TOPLAMINI GÜNCELLE
-========================= */
+/* =====================================================
+   ÜRÜN TOPLAMI
+===================================================== */
 
-function updateProductTotal(price) {
+function updateProductTotal(
+  price
+) {
 
   const quantity =
     Number(
-      document.getElementById(
-        "productQuantity"
-      ).value
+
+      document
+        .getElementById(
+          "productQuantity"
+        )
+        .value
+
     );
 
 
   const total =
-    price * quantity;
+    price *
+    quantity;
 
 
-  document.getElementById(
-    "productTotal"
-  ).innerText =
-    total.toLocaleString("tr-TR") +
-    " TL";
+  document
+    .getElementById(
+      "productTotal"
+    )
+    .innerText =
+
+      total
+        .toLocaleString(
+          "tr-TR"
+        ) +
+
+      " TL";
+
 }
 
 
-/* =========================
-   ÜRÜNÜ SEPETE EKLE
-========================= */
+/* =====================================================
+   SEPETE EKLE
+===================================================== */
 
 function addProductToCart(
   name,
@@ -636,16 +1213,22 @@ function addProductToCart(
 
   const quantity =
     Number(
-      document.getElementById(
-        "productQuantity"
-      ).value
+
+      document
+        .getElementById(
+          "productQuantity"
+        )
+        .value
+
     );
 
 
   const existingItem =
     cart.find(
+
       item =>
         item.name === name
+
     );
 
 
@@ -657,122 +1240,177 @@ function addProductToCart(
   } else {
 
     cart.push({
+
       name: name,
       price: price,
       quantity: quantity
+
     });
 
   }
 
 
-  /* Eklendikten sonra tekrar menüye dön */
-
   showMenu();
+
 }
 
 
-/* =========================
+/* =====================================================
    SEPET
-========================= */
+===================================================== */
 
 function showCart() {
 
   let total = 0;
+
   let products = "";
 
 
-  cart.forEach((item, index) => {
-
-    const itemTotal =
-      item.price *
-      item.quantity;
+  cart.forEach(
+    (item, index) => {
 
 
-    total += itemTotal;
+      const itemTotal =
+        item.price *
+        item.quantity;
 
 
-    products += `
+      total +=
+        itemTotal;
 
-      <div style="
-        background:white;
-        padding:12px;
-        border-radius:8px;
-        margin-top:8px;
-      ">
+
+      products += `
+
 
         <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:10px;
-        ">
-
-          <strong>
-            ${item.name}
-          </strong>
-
-          <strong>
-            ${itemTotal.toLocaleString("tr-TR")} TL
-          </strong>
-
-        </div>
-
-        <div style="
+          background:white;
+          padding:12px;
+          border-radius:8px;
           margin-top:8px;
-          font-size:14px;
-          color:#555;
-        ">
-          ${item.price.toLocaleString("tr-TR")} TL / adet
-        </div>
-
-
-        <div style="
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:15px;
-          margin-top:10px;
         ">
 
-          <button
-            style="
-              width:42px;
-              margin-top:0;
-            "
-            onclick="decreaseQuantity(${index})"
-          >
-            −
-          </button>
 
-          <strong style="
-            font-size:17px;
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
           ">
-            ${item.quantity}
-          </strong>
+
+
+            <strong>
+              ${item.name}
+            </strong>
+
+
+            <strong>
+
+              ${
+                itemTotal
+                  .toLocaleString(
+                    "tr-TR"
+                  )
+              } TL
+
+            </strong>
+
+          </div>
+
+
+          <div style="
+            margin-top:8px;
+            font-size:14px;
+            color:#555;
+          ">
+
+            ${
+              item.price
+                .toLocaleString(
+                  "tr-TR"
+                )
+            } TL / adet
+
+          </div>
+
+
+          <div style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:15px;
+            margin-top:10px;
+          ">
+
+
+            <button
+
+              style="
+                width:42px;
+                margin-top:0;
+              "
+
+              onclick="
+                decreaseQuantity(
+                  ${index}
+                )
+              "
+            >
+
+              −
+
+            </button>
+
+
+            <strong style="
+              font-size:17px;
+            ">
+
+              ${item.quantity}
+
+            </strong>
+
+
+            <button
+
+              style="
+                width:42px;
+                margin-top:0;
+              "
+
+              onclick="
+                increaseQuantity(
+                  ${index}
+                )
+              "
+            >
+
+              +
+
+            </button>
+
+          </div>
+
 
           <button
-            style="
-              width:42px;
-              margin-top:0;
+
+            onclick="
+              removeFromCart(
+                ${index}
+              )
             "
-            onclick="increaseQuantity(${index})"
           >
-            +
+
+            Ürünü Sil
+
           </button>
+
 
         </div>
 
+      `;
 
-        <button
-          onclick="removeFromCart(${index})"
-        >
-          Ürünü Sil
-        </button>
-
-      </div>
-
-    `;
-  });
+    }
+  );
 
 
   if (
@@ -785,65 +1423,99 @@ function showCart() {
   }
 
 
-  document.getElementById("home").innerHTML = `
-
-    <h2>Sepetim</h2>
-
-    ${products}
-
-    <h3 style="
-      margin-top:20px;
-    ">
-      Toplam:
-      ${total.toLocaleString("tr-TR")} TL
-    </h3>
+  document
+    .getElementById("home")
+    .innerHTML = `
 
 
-    ${
-      cart.length > 0
-        ? `
-          <button
-            onclick="showOrderForm()"
-          >
-            Siparişi Oluştur
-          </button>
-        `
-        : ""
-    }
+      <h2>
+        Sepetim
+      </h2>
 
 
-    <button
-      class="back"
-      onclick="showMenu()"
-    >
-      Menüye Dön
-    </button>
+      ${products}
 
 
-    <button
-      class="back"
-      onclick="showHome()"
-    >
-      Ana Sayfa
-    </button>
+      <h3 style="
+        margin-top:20px;
+      ">
 
-  `;
+        Toplam:
+
+        ${
+          total
+            .toLocaleString(
+              "tr-TR"
+            )
+        } TL
+
+      </h3>
+
+
+      ${
+        cart.length > 0
+
+          ? `
+
+            <button
+              onclick="
+                showOrderForm()
+              "
+            >
+
+              Siparişi Oluştur
+
+            </button>
+
+          `
+
+          : ""
+      }
+
+
+      <button
+        class="back"
+        onclick="showMenu()"
+      >
+
+        Menüye Dön
+
+      </button>
+
+
+      <button
+        class="back"
+        onclick="showHome()"
+      >
+
+        Ana Sayfa
+
+      </button>
+
+
+    `;
+
 }
 
 
-/* =========================
+/* =====================================================
    ADET
-========================= */
+===================================================== */
 
-function increaseQuantity(index) {
+function increaseQuantity(
+  index
+) {
 
   cart[index].quantity++;
 
   showCart();
+
 }
 
 
-function decreaseQuantity(index) {
+function decreaseQuantity(
+  index
+) {
 
   if (
     cart[index].quantity > 1
@@ -853,25 +1525,37 @@ function decreaseQuantity(index) {
 
   } else {
 
-    cart.splice(index, 1);
+    cart.splice(
+      index,
+      1
+    );
 
   }
 
+
   showCart();
+
 }
 
 
-function removeFromCart(index) {
+function removeFromCart(
+  index
+) {
 
-  cart.splice(index, 1);
+  cart.splice(
+    index,
+    1
+  );
+
 
   showCart();
+
 }
 
 
-/* =========================
+/* =====================================================
    YARININ TARİHİ
-========================= */
+===================================================== */
 
 function getTomorrowDate() {
 
@@ -880,7 +1564,9 @@ function getTomorrowDate() {
 
 
   tomorrow.setDate(
+
     tomorrow.getDate() + 1
+
   );
 
 
@@ -890,165 +1576,226 @@ function getTomorrowDate() {
 
   const month =
     String(
+
       tomorrow.getMonth() + 1
-    ).padStart(2, "0");
+
+    ).padStart(
+      2,
+      "0"
+    );
 
 
   const day =
     String(
+
       tomorrow.getDate()
-    ).padStart(2, "0");
+
+    ).padStart(
+      2,
+      "0"
+    );
 
 
-  return `${year}-${month}-${day}`;
+  return (
+    `${year}-${month}-${day}`
+  );
+
 }
 
 
-/* =========================
+/* =====================================================
    SİPARİŞ EKRANI
-========================= */
+===================================================== */
 
 function showOrderForm() {
 
-  document.getElementById("home").innerHTML = `
-
-    <h2>Sipariş Oluştur</h2>
-
-    <p>
-      Teslimat günü:
-      <strong>Yarın</strong>
-    </p>
-
-    <label>
-      Teslimat Saati
-    </label>
-
-    <select id="deliverySlot">
-
-      <option value="">
-        Teslimat saati seçin
-      </option>
-
-      <option value="07:00-07:30">
-        07:00 - 07:30
-      </option>
-
-      <option value="07:30-08:00">
-        07:30 - 08:00
-      </option>
-
-      <option value="08:00-08:30">
-        08:00 - 08:30
-      </option>
-
-      <option value="08:30-09:00">
-        08:30 - 09:00
-      </option>
-
-      <option value="09:00-09:30">
-        09:00 - 09:30
-      </option>
-
-      <option value="09:30-10:00">
-        09:30 - 10:00
-      </option>
-
-      <option value="10:00-10:30">
-        10:00 - 10:30
-      </option>
-
-      <option value="10:30-11:00">
-        10:30 - 11:00
-      </option>
-
-      <option value="11:00-11:30">
-        11:00 - 11:30
-      </option>
-
-      <option value="11:30-12:00">
-        11:30 - 12:00
-      </option>
-
-      <option value="12:00-12:30">
-        12:00 - 12:30
-      </option>
-
-      <option value="12:30-13:00">
-        12:30 - 13:00
-      </option>
-
-      <option value="13:00-13:30">
-        13:00 - 13:30
-      </option>
-
-      <option value="13:30-14:00">
-        13:30 - 14:00
-      </option>
-
-    </select>
+  document
+    .getElementById("home")
+    .innerHTML = `
 
 
-    <div style="
-      background:white;
-      padding:12px;
-      border-radius:8px;
-      margin-top:15px;
-    ">
+      <h2>
+        Sipariş Oluştur
+      </h2>
 
-      <strong>
-        Ödeme
-      </strong>
 
       <p>
-        Kapıda ödeme
+
+        Teslimat günü:
+
+        <strong>
+          Yarın
+        </strong>
+
       </p>
 
-    </div>
+
+      <label>
+        Teslimat Saati
+      </label>
 
 
-    <button
-      onclick="createOrder()"
-    >
-      Siparişi Onayla
-    </button>
+      <select
+        id="deliverySlot"
+      >
 
 
-    <button
-      class="back"
-      onclick="showCart()"
-    >
-      Sepete Dön
-    </button>
+        <option value="">
+          Teslimat saati seçin
+        </option>
 
 
-    <p
-      id="orderMessage"
-      style="
-        text-align:center;
+        <option value="07:00-07:30">
+          07:00 - 07:30
+        </option>
+
+
+        <option value="07:30-08:00">
+          07:30 - 08:00
+        </option>
+
+
+        <option value="08:00-08:30">
+          08:00 - 08:30
+        </option>
+
+
+        <option value="08:30-09:00">
+          08:30 - 09:00
+        </option>
+
+
+        <option value="09:00-09:30">
+          09:00 - 09:30
+        </option>
+
+
+        <option value="09:30-10:00">
+          09:30 - 10:00
+        </option>
+
+
+        <option value="10:00-10:30">
+          10:00 - 10:30
+        </option>
+
+
+        <option value="10:30-11:00">
+          10:30 - 11:00
+        </option>
+
+
+        <option value="11:00-11:30">
+          11:00 - 11:30
+        </option>
+
+
+        <option value="11:30-12:00">
+          11:30 - 12:00
+        </option>
+
+
+        <option value="12:00-12:30">
+          12:00 - 12:30
+        </option>
+
+
+        <option value="12:30-13:00">
+          12:30 - 13:00
+        </option>
+
+
+        <option value="13:00-13:30">
+          13:00 - 13:30
+        </option>
+
+
+        <option value="13:30-14:00">
+          13:30 - 14:00
+        </option>
+
+
+      </select>
+
+
+      <div style="
+        background:white;
+        padding:12px;
+        border-radius:8px;
         margin-top:15px;
-      "
-    ></p>
+      ">
 
-  `;
+
+        <strong>
+          Ödeme
+        </strong>
+
+
+        <p>
+          Kapıda ödeme
+        </p>
+
+
+      </div>
+
+
+      <button
+        onclick="
+          createOrder()
+        "
+      >
+
+        Siparişi Onayla
+
+      </button>
+
+
+      <button
+        class="back"
+        onclick="
+          showCart()
+        "
+      >
+
+        Sepete Dön
+
+      </button>
+
+
+      <p
+        id="orderMessage"
+
+        style="
+          text-align:center;
+          margin-top:15px;
+        "
+      ></p>
+
+
+    `;
+
 }
 
 
-/* =========================
+/* =====================================================
    SİPARİŞ OLUŞTUR
-========================= */
+===================================================== */
 
 async function createOrder() {
 
   const slot =
-    document.getElementById(
-      "deliverySlot"
-    ).value;
+    document
+      .getElementById(
+        "deliverySlot"
+      )
+      .value;
 
 
   const message =
-    document.getElementById(
-      "orderMessage"
-    );
+    document
+      .getElementById(
+        "orderMessage"
+      );
 
 
   if (!slot) {
@@ -1057,14 +1804,21 @@ async function createOrder() {
       "Lütfen teslimat saati seçin.";
 
     return;
+
   }
 
 
   const {
+
     data: { user },
+
     error: userError
+
   } =
-    await supabaseClient.auth.getUser();
+
+    await supabaseClient
+      .auth
+      .getUser();
 
 
   if (
@@ -1076,27 +1830,53 @@ async function createOrder() {
       "Oturumunuz bulunamadı. Lütfen tekrar giriş yapın.";
 
     return;
+
   }
 
 
   const neighborhood =
-    user.user_metadata?.neighborhood;
+    user
+      .user_metadata
+      ?.neighborhood;
 
 
   const address =
-    user.user_metadata?.address;
+    user
+      .user_metadata
+      ?.address;
 
 
   const customerName =
     (
-      (user.user_metadata?.first_name || "") +
-      " " +
-      (user.user_metadata?.last_name || "")
+
+      (
+        user
+          .user_metadata
+          ?.first_name ||
+        ""
+      )
+
+      +
+
+      " "
+
+      +
+
+      (
+        user
+          .user_metadata
+          ?.last_name ||
+        ""
+      )
+
     ).trim();
 
 
   const phone =
-    user.user_metadata?.phone || "";
+    user
+      .user_metadata
+      ?.phone ||
+    "";
 
 
   if (
@@ -1108,6 +1888,7 @@ async function createOrder() {
       "Adres bilgileriniz eksik. Lütfen çıkış yapıp tekrar giriş yapın.";
 
     return;
+
   }
 
 
@@ -1123,6 +1904,7 @@ async function createOrder() {
       "Bu gün için online sipariş süresi dolmuştur.";
 
     return;
+
   }
 
 
@@ -1134,6 +1916,7 @@ async function createOrder() {
       "Sepetiniz boş.";
 
     return;
+
   }
 
 
@@ -1146,11 +1929,13 @@ async function createOrder() {
 
 
   const startTime =
-    slotParts[0] + ":00";
+    slotParts[0] +
+    ":00";
 
 
   const endTime =
-    slotParts[1] + ":00";
+    slotParts[1] +
+    ":00";
 
 
   message.innerText =
@@ -1158,36 +1943,52 @@ async function createOrder() {
 
 
   const {
+
     data: deliverySlot,
+
     error: slotError
+
   } =
+
     await supabaseClient
-      .from("delivery_slots")
+
+      .from(
+        "delivery_slots"
+      )
+
       .select(
         "id, slot_date, start_time, end_time, capacity"
       )
+
       .eq(
         "slot_date",
         deliveryDate
       )
+
       .eq(
         "start_time",
         startTime
       )
+
       .eq(
         "end_time",
         endTime
       )
+
       .maybeSingle();
 
 
   if (slotError) {
 
     message.innerText =
+
       "Teslimat saati kontrolünde hata oluştu: " +
+
       slotError.message;
 
+
     return;
+
   }
 
 
@@ -1197,210 +1998,329 @@ async function createOrder() {
       "Seçtiğiniz teslimat saati için uygun bir teslimat kaydı bulunamadı.";
 
     return;
+
   }
 
 
   const {
+
     data: orderCount,
+
     error: countError
+
   } =
+
     await supabaseClient
+
       .rpc(
+
         "get_slot_order_count",
+
         {
+
           p_delivery_slot_id:
             deliverySlot.id
+
         }
+
       );
 
 
   if (countError) {
 
     message.innerText =
+
       "Teslimat kapasitesi kontrolünde hata oluştu: " +
+
       countError.message;
 
+
     return;
+
   }
 
 
   if (
+
     orderCount >=
     deliverySlot.capacity
+
   ) {
 
     message.innerText =
       "Bu teslimat saati şu anda dolu. Lütfen başka bir teslimat saati seçin.";
 
     return;
+
   }
 
 
   let total = 0;
+
   let totalQuantity = 0;
 
 
-  cart.forEach(item => {
-
-    total +=
-      item.price *
-      item.quantity;
+  cart.forEach(
+    item => {
 
 
-    totalQuantity +=
-      item.quantity;
+      total +=
 
-  });
+        item.price *
+        item.quantity;
+
+
+      totalQuantity +=
+        item.quantity;
+
+
+    }
+  );
 
 
   const productSummary =
+
     cart
+
       .map(
+
         item =>
+
           `${item.name} x${item.quantity}`
+
       )
-      .join(" + ");
+
+      .join(
+        " + "
+      );
 
 
   message.innerText =
     "Sipariş oluşturuluyor...";
 
 
-  const {
-    error
-  } =
+  const { error } =
+
     await supabaseClient
-      .from("orders")
+
+      .from(
+        "orders"
+      )
+
       .insert([
+
         {
-          user_id: user.id,
-          product_name: productSummary,
-          quantity: totalQuantity,
-          total: total,
-          total_amount: total,
-          delivery_date: deliveryDate,
-          delivery_slot: slot,
-          delivery_slot_id: deliverySlot.id,
-          neighborhood: neighborhood,
-          address: address,
-          customer_name: customerName,
-          phone: phone,
-          status: "new"
+
+          user_id:
+            user.id,
+
+          product_name:
+            productSummary,
+
+          quantity:
+            totalQuantity,
+
+          total:
+            total,
+
+          total_amount:
+            total,
+
+          delivery_date:
+            deliveryDate,
+
+          delivery_slot:
+            slot,
+
+          delivery_slot_id:
+            deliverySlot.id,
+
+          neighborhood:
+            neighborhood,
+
+          address:
+            address,
+
+          customer_name:
+            customerName,
+
+          phone:
+            phone,
+
+          status:
+            "new"
+
         }
+
       ]);
 
 
   if (error) {
 
     message.innerText =
+
       "Sipariş oluşturulamadı: " +
+
       error.message;
 
+
     return;
+
   }
 
 
   cart = [];
 
 
-  document.getElementById("home").innerHTML = `
+  document
+    .getElementById("home")
+    .innerHTML = `
 
-    <h2>
-      Siparişiniz Alındı!
-    </h2>
 
-    <p style="
-      text-align:center;
-    ">
-      Siparişiniz başarıyla oluşturuldu.
-    </p>
+      <h2>
+        Siparişiniz Alındı!
+      </h2>
 
-    <div style="
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      margin-top:20px;
-    ">
 
-      <p>
-        <strong>
-          Teslimat günü:
-        </strong>
+      <p style="
+        text-align:center;
+      ">
 
-        ${deliveryDate}
+        Siparişiniz başarıyla oluşturuldu.
+
       </p>
 
-      <p>
-        <strong>
-          Teslimat saati:
-        </strong>
 
-        ${slot}
-      </p>
-
-      <p>
-        <strong>
-          Adres:
-        </strong>
-
-        ${address}
-      </p>
-
-      <p>
-        <strong>
-          Sipariş:
-        </strong>
-
-        ${productSummary}
-      </p>
-
-      <p>
-        <strong>
-          Toplam:
-        </strong>
-
-        ${total.toLocaleString("tr-TR")}
-        TL
-      </p>
-
-      <p>
-        <strong>
-          Ödeme:
-        </strong>
-
-        Kapıda ödeme
-      </p>
-
-    </div>
+      <div style="
+        background:white;
+        padding:15px;
+        border-radius:10px;
+        margin-top:20px;
+      ">
 
 
-    <button
-      onclick="showHome()"
-    >
-      Ana Sayfa
-    </button>
+        <p>
 
-  `;
+          <strong>
+            Teslimat günü:
+          </strong>
+
+          ${deliveryDate}
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Teslimat saati:
+          </strong>
+
+          ${slot}
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Adres:
+          </strong>
+
+          ${address}
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Sipariş:
+          </strong>
+
+          ${productSummary}
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Toplam:
+          </strong>
+
+          ${
+            total
+              .toLocaleString(
+                "tr-TR"
+              )
+          } TL
+
+        </p>
+
+
+        <p>
+
+          <strong>
+            Ödeme:
+          </strong>
+
+          Kapıda ödeme
+
+        </p>
+
+
+      </div>
+
+
+      <button
+        onclick="
+          showHome()
+        "
+      >
+
+        Ana Sayfa
+
+      </button>
+
+
+    `;
+
 }
 
 
-/* =========================
+/* =====================================================
    SİPARİŞLERİM
-========================= */
+===================================================== */
 
 async function showOrders() {
 
-  document.getElementById("home").innerHTML = `
-    <h2>Siparişlerim</h2>
-    <p>Siparişleriniz yükleniyor...</p>
-  `;
+  document
+    .getElementById("home")
+    .innerHTML = `
+
+      <h2>
+        Siparişlerim
+      </h2>
+
+      <p>
+        Siparişleriniz yükleniyor...
+      </p>
+
+    `;
 
 
   const {
+
     data: { user },
+
     error: userError
+
   } =
-    await supabaseClient.auth.getUser();
+
+    await supabaseClient
+      .auth
+      .getUser();
 
 
   if (
@@ -1408,38 +2328,51 @@ async function showOrders() {
     !user
   ) {
 
-    document.getElementById("home").innerHTML = `
+    document
+      .getElementById("home")
+      .innerHTML = `
 
-      <h2>Siparişlerim</h2>
+        <h2>
+          Siparişlerim
+        </h2>
 
-      <p>
-        Lütfen tekrar giriş yapın.
-      </p>
+        <p>
+          Lütfen tekrar giriş yapın.
+        </p>
 
-      <button
-        class="back"
-        onclick="showHome()"
-      >
-        Ana Sayfa
-      </button>
+        <button
+          class="back"
+          onclick="showHome()"
+        >
+          Ana Sayfa
+        </button>
 
-    `;
+      `;
 
     return;
+
   }
 
 
   const {
+
     data: orders,
+
     error
+
   } =
+
     await supabaseClient
+
       .from("orders")
+
       .select("*")
+
       .eq(
         "user_id",
         user.id
       )
+
       .order(
         "created_at",
         {
@@ -1450,25 +2383,35 @@ async function showOrders() {
 
   if (error) {
 
-    document.getElementById("home").innerHTML = `
+    document
+      .getElementById("home")
+      .innerHTML = `
 
-      <h2>Siparişlerim</h2>
+        <h2>
+          Siparişlerim
+        </h2>
 
-      <p>
-        Siparişler yüklenirken hata oluştu:
-        ${error.message}
-      </p>
+        <p>
 
-      <button
-        class="back"
-        onclick="showHome()"
-      >
-        Ana Sayfa
-      </button>
+          Siparişler yüklenirken hata oluştu:
 
-    `;
+          ${error.message}
+
+        </p>
+
+        <button
+          class="back"
+          onclick="showHome()"
+        >
+
+          Ana Sayfa
+
+        </button>
+
+      `;
 
     return;
+
   }
 
 
@@ -1485,230 +2428,365 @@ async function showOrders() {
 
   } else {
 
-    orders.forEach(order => {
 
-      orderList += `
+    orders.forEach(
+      order => {
 
-        <div style="
-          background:white;
-          padding:12px;
-          border-radius:8px;
-          margin-top:8px;
-        ">
 
-          <strong>
-            ${order.product_name}
-          </strong>
+        orderList += `
 
-          <p>
-            Adet:
-            ${order.quantity}
-          </p>
 
-          <p>
-            Toplam:
-            ${order.total_amount || order.total} TL
-          </p>
+          <div style="
+            background:white;
+            padding:12px;
+            border-radius:8px;
+            margin-top:8px;
+          ">
 
-          <p>
-            Teslimat:
-            ${order.delivery_date}
-          </p>
 
-          <p>
-            Saat:
-            ${order.delivery_slot}
-          </p>
+            <strong>
+              ${order.product_name}
+            </strong>
 
-          <p>
-            Mahalle:
-            ${order.neighborhood || "-"}
-          </p>
 
-          <p>
-            Adres:
-            ${order.address || "-"}
-          </p>
+            <p>
+              Adet:
+              ${order.quantity}
+            </p>
 
-          <p>
-            Durum:
-            ${getStatusText(order.status)}
-          </p>
 
-        </div>
+            <p>
 
-      `;
-    });
+              Toplam:
+
+              ${
+                order.total_amount ||
+                order.total
+              } TL
+
+            </p>
+
+
+            <p>
+
+              Teslimat:
+
+              ${order.delivery_date}
+
+            </p>
+
+
+            <p>
+
+              Saat:
+
+              ${order.delivery_slot}
+
+            </p>
+
+
+            <p>
+
+              Mahalle:
+
+              ${
+                order.neighborhood ||
+                "-"
+              }
+
+            </p>
+
+
+            <p>
+
+              Adres:
+
+              ${
+                order.address ||
+                "-"
+              }
+
+            </p>
+
+
+            <p>
+
+              Durum:
+
+              ${
+                getStatusText(
+                  order.status
+                )
+              }
+
+            </p>
+
+
+          </div>
+
+
+        `;
+
+      }
+    );
+
   }
 
 
-  document.getElementById("home").innerHTML = `
+  document
+    .getElementById("home")
+    .innerHTML = `
 
-    <h2>
-      Siparişlerim
-    </h2>
-
-    ${orderList}
-
-    <button
-      class="back"
-      onclick="showHome()"
-    >
-      Ana Sayfa
-    </button>
-
-  `;
-}
-
-
-/* =========================
-   YÖNETİCİ PANELİ
-========================= */
-
-async function showAdminPanel() {
-
-  const {
-    data: { user },
-    error: userError
-  } =
-    await supabaseClient.auth.getUser();
-
-
-  if (
-    userError ||
-    !user ||
-    user.user_metadata?.role !== "admin"
-  ) {
-
-    document.getElementById("home").innerHTML = `
 
       <h2>
-        Yönetici Paneli
+        Siparişlerim
       </h2>
 
-      <p>
-        Bu alana erişim yetkiniz yok.
-      </p>
+
+      ${orderList}
+
 
       <button
         class="back"
         onclick="showHome()"
       >
+
         Ana Sayfa
+
       </button>
+
 
     `;
 
+}
+
+
+/* =====================================================
+   YÖNETİCİ PANELİ
+===================================================== */
+
+async function showAdminPanel() {
+
+  const {
+
+    data: { user },
+
+    error: userError
+
+  } =
+
+    await supabaseClient
+      .auth
+      .getUser();
+
+
+  if (
+
+    userError ||
+
+    !user ||
+
+    user
+      .user_metadata
+      ?.role !==
+      "admin"
+
+  ) {
+
+    document
+      .getElementById("home")
+      .innerHTML = `
+
+
+        <h2>
+          Yönetici Paneli
+        </h2>
+
+
+        <p>
+          Bu alana erişim yetkiniz yok.
+        </p>
+
+
+        <button
+          class="back"
+          onclick="showHome()"
+        >
+
+          Ana Sayfa
+
+        </button>
+
+
+      `;
+
+
     return;
+
   }
 
 
-  document.getElementById("home").innerHTML = `
-
-    <h2>
-      Yönetici Paneli
-    </h2>
-
-    <p style="
-      margin-top:0;
-      color:#666;
-      font-size:14px;
-    ">
-      Sipariş hazırlama listesi
-    </p>
+  document
+    .getElementById("home")
+    .innerHTML = `
 
 
-    <div style="
-      margin-bottom:15px;
-    ">
+      <h2>
+        Yönetici Paneli
+      </h2>
 
-      <select
-        id="adminDateFilter"
-        style="
-          width:100%;
-          padding:10px;
-          font-size:14px;
-        "
+
+      <p style="
+        margin-top:0;
+        color:#666;
+        font-size:14px;
+      ">
+
+        Sipariş hazırlama listesi
+
+      </p>
+
+
+      <div style="
+        margin-bottom:15px;
+      ">
+
+
+        <select
+          id="adminDateFilter"
+
+          style="
+            width:100%;
+            padding:10px;
+            font-size:14px;
+          "
+        >
+
+
+          <option value="tomorrow">
+            Yarın
+          </option>
+
+
+          <option value="all">
+            Tüm Siparişler
+          </option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <div id="adminOrders">
+
+        Siparişler yükleniyor...
+
+      </div>
+
+
+      <button
+        class="back"
+        onclick="showHome()"
       >
 
-        <option value="tomorrow">
-          Yarın
-        </option>
+        Ana Sayfa
 
-        <option value="all">
-          Tüm Siparişler
-        </option>
-
-      </select>
-
-    </div>
+      </button>
 
 
-    <div id="adminOrders">
-      Siparişler yükleniyor...
-    </div>
-
-
-    <button
-      class="back"
-      onclick="showHome()"
-    >
-      Ana Sayfa
-    </button>
-
-  `;
+    `;
 
 
   document
+
     .getElementById(
       "adminDateFilter"
     )
+
     .addEventListener(
+
       "change",
+
       loadAdminOrders
+
     );
 
 
   await loadAdminOrders();
+
 }
 
 
-/* =========================
+/* =====================================================
    HTML GÜVENLİK
-========================= */
+===================================================== */
 
-function escapeHtml(value) {
+function escapeHtml(
+  value
+) {
 
   if (
+
     value === null ||
+
     value === undefined
+
   ) {
+
     return "-";
+
   }
 
+
   return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
 }
 
 
-/* =========================
+/* =====================================================
    YÖNETİCİ SİPARİŞLERİ
-========================= */
+===================================================== */
 
 async function loadAdminOrders() {
 
   const container =
+
     document.getElementById(
       "adminOrders"
     );
 
 
   if (!container) {
+
     return;
+
   }
 
 
@@ -1717,75 +2795,121 @@ async function loadAdminOrders() {
 
 
   const {
+
     data: { user }
+
   } =
-    await supabaseClient.auth.getUser();
+
+    await supabaseClient
+      .auth
+      .getUser();
 
 
   if (
+
     !user ||
-    user.user_metadata?.role !== "admin"
+
+    user
+      .user_metadata
+      ?.role !==
+      "admin"
+
   ) {
 
     container.innerHTML =
       "<p>Yetkiniz bulunmuyor.</p>";
 
     return;
+
   }
 
 
   const {
+
     data: orders,
+
     error
+
   } =
+
     await supabaseClient
-      .from("orders")
+
+      .from(
+        "orders"
+      )
+
       .select("*")
+
       .order(
+
         "delivery_date",
+
         {
           ascending: true
         }
+
       )
+
       .order(
+
         "delivery_slot",
+
         {
           ascending: true
         }
+
       )
+
       .order(
+
         "created_at",
+
         {
           ascending: true
         }
+
       );
 
 
   if (error) {
 
     container.innerHTML = `
+
       <p>
+
         Siparişler yüklenemedi:
+
         ${escapeHtml(error.message)}
+
       </p>
+
     `;
 
+
     return;
+
   }
 
 
   const filter =
-    document.getElementById(
-      "adminDateFilter"
-    )?.value || "tomorrow";
+
+    document
+      .getElementById(
+        "adminDateFilter"
+      )
+      ?.value ||
+
+    "tomorrow";
 
 
   let filteredOrders =
-    orders || [];
+    orders ||
+    [];
 
 
   if (
-    filter === "tomorrow"
+    filter ===
+    "tomorrow"
   ) {
 
     const tomorrow =
@@ -1793,42 +2917,58 @@ async function loadAdminOrders() {
 
 
     filteredOrders =
+
       filteredOrders.filter(
+
         order =>
-          order.delivery_date === tomorrow
+
+          order.delivery_date ===
+          tomorrow
+
       );
+
   }
 
 
   const dateGroups = {};
 
 
-  filteredOrders.forEach(order => {
-
-    const date =
-      order.delivery_date ||
-      "Tarih yok";
+  filteredOrders.forEach(
+    order => {
 
 
-    if (
-      !dateGroups[date]
-    ) {
+      const date =
 
-      dateGroups[date] = [];
+        order.delivery_date ||
+
+        "Tarih yok";
+
+
+      if (
+        !dateGroups[date]
+      ) {
+
+        dateGroups[date] = [];
+
+      }
+
+
+      dateGroups[date].push(
+        order
+      );
+
 
     }
-
-
-    dateGroups[date].push(order);
-
-  });
+  );
 
 
   let html = "";
 
 
   const dates =
-    Object.keys(dateGroups);
+    Object.keys(
+      dateGroups
+    );
 
 
   if (
@@ -1836,387 +2976,546 @@ async function loadAdminOrders() {
   ) {
 
     container.innerHTML = `
+
       <div style="
         background:white;
         padding:20px;
         text-align:center;
         border-radius:8px;
       ">
+
         Henüz sipariş yok.
+
       </div>
+
     `;
 
+
     return;
+
   }
 
 
-  dates.forEach(date => {
-
-    const dayOrders =
-      dateGroups[date];
+  dates.forEach(
+    date => {
 
 
-    const slotGroups = {};
+      const dayOrders =
+        dateGroups[date];
 
 
-    dayOrders.forEach(order => {
-
-      const slot =
-        order.delivery_slot ||
-        "Saat yok";
+      const slotGroups = {};
 
 
-      if (
-        !slotGroups[slot]
-      ) {
-
-        slotGroups[slot] = [];
-
-      }
+      dayOrders.forEach(
+        order => {
 
 
-      slotGroups[slot].push(order);
+          const slot =
 
-    });
+            order.delivery_slot ||
 
-
-    html += `
-
-      <div style="
-        margin-top:20px;
-        margin-bottom:8px;
-        padding-bottom:6px;
-        border-bottom:2px solid #222;
-      ">
-
-        <strong style="
-          font-size:18px;
-        ">
-          ${escapeHtml(
-            formatDateTurkish(date)
-          )}
-        </strong>
-
-        <span style="
-          color:#666;
-          font-size:13px;
-          margin-left:8px;
-        ">
-          ${dayOrders.length} sipariş
-        </span>
-
-      </div>
-
-    `;
+            "Saat yok";
 
 
-    Object.keys(
-      slotGroups
-    ).forEach(slot => {
+          if (
+            !slotGroups[slot]
+          ) {
 
-      const slotOrders =
-        slotGroups[slot];
+            slotGroups[slot] = [];
 
-
-      let slotQuantity = 0;
-      let slotTotal = 0;
+          }
 
 
-      slotOrders.forEach(order => {
-
-        slotQuantity +=
-          Number(
-            order.quantity || 0
+          slotGroups[slot].push(
+            order
           );
 
 
-        slotTotal +=
-          Number(
-            order.total_amount ||
-            order.total ||
-            0
-          );
-
-      });
+        }
+      );
 
 
       html += `
+
 
         <div style="
-          margin-top:14px;
+          margin-top:20px;
+          margin-bottom:8px;
+          padding-bottom:6px;
+          border-bottom:2px solid #222;
         ">
 
-          <div style="
-            background:#222;
-            color:white;
-            padding:8px 10px;
-            font-size:14px;
-            font-weight:bold;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
+
+          <strong style="
+            font-size:18px;
           ">
 
-            <span>
-              ${escapeHtml(slot)}
-            </span>
+            ${
+              escapeHtml(
+                formatDateTurkish(
+                  date
+                )
+              )
+            }
 
-            <span style="
-              font-weight:normal;
-              font-size:12px;
-            ">
-              ${slotOrders.length} sipariş
-              · ${slotQuantity} ürün
-            </span>
-
-          </div>
+          </strong>
 
 
-          <div style="
-            overflow-x:auto;
-            background:white;
+          <span style="
+            color:#666;
+            font-size:13px;
+            margin-left:8px;
           ">
 
-            <table style="
-              width:100%;
-              border-collapse:collapse;
-              font-size:13px;
-              min-width:850px;
-            ">
+            ${dayOrders.length}
+            sipariş
 
-              <thead>
+          </span>
 
-                <tr style="
-                  background:#f3f3f3;
-                  border-bottom:1px solid #ccc;
-                ">
-
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
-                    Müşteri
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
-                    Telefon
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
-                    Mahalle
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
-                    Adres
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
-                    Ürün
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:center;
-                  ">
-                    Adet
-                  </th>
-
-                  <th style="
-                    padding:7px;
-                    text-align:right;
-                  ">
-                    Tutar
-                  </th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-      `;
-
-
-      slotOrders.forEach(order => {
-
-        html += `
-
-          <tr style="
-            border-bottom:1px solid #e5e5e5;
-          ">
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-              white-space:nowrap;
-            ">
-              ${escapeHtml(
-                order.customer_name || "-"
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-              white-space:nowrap;
-            ">
-              ${escapeHtml(
-                order.phone || "-"
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-            ">
-              ${escapeHtml(
-                order.neighborhood || "-"
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-              max-width:240px;
-            ">
-              ${escapeHtml(
-                order.address || "-"
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-            ">
-              ${escapeHtml(
-                order.product_name || "-"
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-              text-align:center;
-              font-weight:bold;
-            ">
-              ${Number(
-                order.quantity || 0
-              )}
-            </td>
-
-
-            <td style="
-              padding:8px 7px;
-              vertical-align:top;
-              text-align:right;
-              white-space:nowrap;
-              font-weight:bold;
-            ">
-              ${Number(
-                order.total_amount ||
-                order.total ||
-                0
-              ).toLocaleString("tr-TR")}
-              TL
-            </td>
-
-          </tr>
-
-        `;
-
-      });
-
-
-      html += `
-
-              </tbody>
-
-
-              <tfoot>
-
-                <tr style="
-                  background:#f8f8f8;
-                  border-top:1px solid #ccc;
-                  font-weight:bold;
-                ">
-
-                  <td
-                    colspan="5"
-                    style="
-                      padding:8px 7px;
-                      text-align:right;
-                    "
-                  >
-                    Saat Toplamı:
-                  </td>
-
-
-                  <td style="
-                    padding:8px 7px;
-                    text-align:center;
-                  ">
-                    ${slotQuantity}
-                  </td>
-
-
-                  <td style="
-                    padding:8px 7px;
-                    text-align:right;
-                    white-space:nowrap;
-                  ">
-                    ${slotTotal.toLocaleString("tr-TR")}
-                    TL
-                  </td>
-
-                </tr>
-
-              </tfoot>
-
-            </table>
-
-          </div>
 
         </div>
 
+
       `;
 
-    });
 
-  });
+      Object
+        .keys(
+          slotGroups
+        )
+        .forEach(
+          slot => {
+
+
+            const slotOrders =
+              slotGroups[slot];
+
+
+            let slotQuantity = 0;
+
+            let slotTotal = 0;
+
+
+            slotOrders.forEach(
+              order => {
+
+
+                slotQuantity +=
+
+                  Number(
+                    order.quantity ||
+                    0
+                  );
+
+
+                slotTotal +=
+
+                  Number(
+
+                    order.total_amount ||
+
+                    order.total ||
+
+                    0
+
+                  );
+
+
+              }
+            );
+
+
+            html += `
+
+
+              <div style="
+                margin-top:14px;
+              ">
+
+
+                <div style="
+                  background:#222;
+                  color:white;
+                  padding:8px 10px;
+                  font-size:14px;
+                  font-weight:bold;
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:10px;
+                ">
+
+
+                  <span>
+
+                    ${
+                      escapeHtml(
+                        slot
+                      )
+                    }
+
+                  </span>
+
+
+                  <span style="
+                    font-weight:normal;
+                    font-size:12px;
+                  ">
+
+                    ${slotOrders.length}
+                    sipariş
+
+                    ·
+
+                    ${slotQuantity}
+                    ürün
+
+                  </span>
+
+
+                </div>
+
+
+                <div style="
+                  overflow-x:auto;
+                  background:white;
+                ">
+
+
+                  <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                    font-size:13px;
+                    min-width:850px;
+                  ">
+
+
+                    <thead>
+
+
+                      <tr style="
+                        background:#f3f3f3;
+                        border-bottom:1px solid #ccc;
+                      ">
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:left;
+                        ">
+                          Müşteri
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:left;
+                        ">
+                          Telefon
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:left;
+                        ">
+                          Mahalle
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:left;
+                        ">
+                          Adres
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:left;
+                        ">
+                          Ürün
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:center;
+                        ">
+                          Adet
+                        </th>
+
+
+                        <th style="
+                          padding:7px;
+                          text-align:right;
+                        ">
+                          Tutar
+                        </th>
+
+
+                      </tr>
+
+
+                    </thead>
+
+
+                    <tbody>
+
+
+            `;
+
+
+            slotOrders.forEach(
+              order => {
+
+
+                html += `
+
+
+                  <tr style="
+                    border-bottom:1px solid #e5e5e5;
+                  ">
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                      white-space:nowrap;
+                    ">
+
+                      ${
+                        escapeHtml(
+                          order.customer_name ||
+                          "-"
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                      white-space:nowrap;
+                    ">
+
+                      ${
+                        escapeHtml(
+                          order.phone ||
+                          "-"
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                    ">
+
+                      ${
+                        escapeHtml(
+                          order.neighborhood ||
+                          "-"
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                      max-width:240px;
+                    ">
+
+                      ${
+                        escapeHtml(
+                          order.address ||
+                          "-"
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                    ">
+
+                      ${
+                        escapeHtml(
+                          order.product_name ||
+                          "-"
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                      text-align:center;
+                      font-weight:bold;
+                    ">
+
+                      ${
+                        Number(
+                          order.quantity ||
+                          0
+                        )
+                      }
+
+                    </td>
+
+
+                    <td style="
+                      padding:8px 7px;
+                      vertical-align:top;
+                      text-align:right;
+                      white-space:nowrap;
+                      font-weight:bold;
+                    ">
+
+                      ${
+                        Number(
+
+                          order.total_amount ||
+
+                          order.total ||
+
+                          0
+
+                        )
+                        .toLocaleString(
+                          "tr-TR"
+                        )
+                      }
+
+                      TL
+
+                    </td>
+
+
+                  </tr>
+
+
+                `;
+
+
+              }
+            );
+
+
+            html += `
+
+
+                    </tbody>
+
+
+                    <tfoot>
+
+
+                      <tr style="
+                        background:#f8f8f8;
+                        border-top:1px solid #ccc;
+                        font-weight:bold;
+                      ">
+
+
+                        <td
+
+                          colspan="5"
+
+                          style="
+                            padding:8px 7px;
+                            text-align:right;
+                          "
+                        >
+
+                          Saat Toplamı:
+
+                        </td>
+
+
+                        <td style="
+                          padding:8px 7px;
+                          text-align:center;
+                        ">
+
+                          ${slotQuantity}
+
+                        </td>
+
+
+                        <td style="
+                          padding:8px 7px;
+                          text-align:right;
+                          white-space:nowrap;
+                        ">
+
+                          ${
+                            slotTotal
+                              .toLocaleString(
+                                "tr-TR"
+                              )
+                          }
+
+                          TL
+
+                        </td>
+
+
+                      </tr>
+
+
+                    </tfoot>
+
+
+                  </table>
+
+
+                </div>
+
+
+              </div>
+
+
+            `;
+
+
+          }
+        );
+
+
+    }
+  );
 
 
   container.innerHTML =
     html;
+
 }
 
 
-/* =========================
+/* =====================================================
    TARİH
-========================= */
+===================================================== */
 
 function formatDateTurkish(
   dateString
 ) {
 
   if (!dateString) {
+
     return "Tarih yok";
+
   }
 
 
@@ -2227,7 +3526,9 @@ function formatDateTurkish(
   if (
     parts.length !== 3
   ) {
+
     return dateString;
+
   }
 
 
@@ -2244,68 +3545,117 @@ function formatDateTurkish(
 
 
   const monthNames = [
+
     "",
+
     "Ocak",
+
     "Şubat",
+
     "Mart",
+
     "Nisan",
+
     "Mayıs",
+
     "Haziran",
+
     "Temmuz",
+
     "Ağustos",
+
     "Eylül",
+
     "Ekim",
+
     "Kasım",
+
     "Aralık"
+
   ];
 
 
   return (
-    Number(day) +
-    " " +
+
+    Number(day)
+
+    +
+
+    " "
+
+    +
+
     monthNames[
       Number(month)
-    ] +
-    " " +
+    ]
+
+    +
+
+    " "
+
+    +
+
     year
+
   );
+
 }
 
 
-/* =========================
+/* =====================================================
    DURUM METNİ
-========================= */
+===================================================== */
 
 function getStatusText(
   status
 ) {
 
   const statuses = {
-    new: "Yeni Sipariş",
-    preparing: "Hazırlanıyor",
-    ready: "Hazır",
-    delivered: "Teslim Edildi",
-    cancelled: "İptal"
+
+    new:
+      "Yeni Sipariş",
+
+    preparing:
+      "Hazırlanıyor",
+
+    ready:
+      "Hazır",
+
+    delivered:
+      "Teslim Edildi",
+
+    cancelled:
+      "İptal"
+
   };
 
 
   return (
+
     statuses[status] ||
+
     status ||
+
     "-"
+
   );
+
 }
 
 
-/* =========================
+/* =====================================================
    ÇIKIŞ
-========================= */
+===================================================== */
 
 async function logout() {
 
-  await supabaseClient.auth.signOut();
+  await supabaseClient
+    .auth
+    .signOut();
+
 
   location.reload();
+
 }
 
 </script>
