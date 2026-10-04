@@ -1306,71 +1306,88 @@ function getMinimumOrderDate() {
 ===================================================== */
 
 function showOrderForm() {
-
   const minimumDate = getMinimumOrderDate();
   const afterCutoff = new Date().getHours() >= 18;
 
-  document
-    .getElementById("home")
-    .innerHTML = `
+  document.getElementById("home").innerHTML = `
+    <h2>Sipariş Oluştur</h2>
+    <div style="background:#fff7d6;border:1px solid #f1d47a;padding:14px;border-radius:14px;margin:12px 0 18px;line-height:1.55;color:#4d442d;">
+      <strong>Önemli bilgi</strong><br>
+      Bugün için online sipariş alamıyoruz. Ertesi gün için vereceğiniz siparişlerde son sipariş saatimiz <strong>18:00</strong>'dır.
+      ${afterCutoff ? `<br><br><strong>Bugün saat 18:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
+      <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
+    </div>
 
-      <h2>Sipariş Oluştur</h2>
+    <label>Teslimat Tarihi</label>
+    <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability()">
 
-      <div style="
-        background:#fff7d6;
-        border:1px solid #f1d47a;
-        padding:14px;
-        border-radius:14px;
-        margin:12px 0 18px;
-        line-height:1.55;
-        color:#4d442d;
-      ">
-        <strong>Önemli bilgi</strong><br>
-        Bugün için online sipariş alamıyoruz. Ertesi gün için vereceğiniz siparişlerde son sipariş saatimiz <strong>18:00</strong>'dır.
-        ${afterCutoff ? `<br><br><strong>Bugün saat 18:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
-        <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
-      </div>
+    <label>Teslimat Saati</label>
+    <select id="deliverySlot">
+      <option value="">Saatler yükleniyor...</option>
+    </select>
+    <div id="slotAvailabilityInfo" style="margin-top:10px;font-size:13px;color:#6f756c;line-height:1.5;">
+      Her yarım saatlik zaman diliminde en fazla 3 sipariş alınır.
+    </div>
 
-      <label>Teslimat Tarihi</label>
-      <input
-        type="date"
-        id="deliveryDate"
-        min="${minimumDate}"
-        value="${minimumDate}"
-      >
+    <div style="background:white;padding:12px;border-radius:8px;margin-top:15px;">
+      <strong>Ödeme</strong><p>Kapıda nakit ödeme</p>
+    </div>
+    <button onclick="createOrder()">Siparişi Onayla</button>
+    <button class="back" onclick="showCart()">Sepete Dön</button>
+    <p id="orderMessage" style="text-align:center;margin-top:15px;"></p>
+  `;
 
-      <label>Teslimat Saati</label>
-
-      <select id="deliverySlot">
-        <option value="">Teslimat saati seçin</option>
-        <option value="07:00-07:30">07:00 - 07:30</option>
-        <option value="07:30-08:00">07:30 - 08:00</option>
-        <option value="08:00-08:30">08:00 - 08:30</option>
-        <option value="08:30-09:00">08:30 - 09:00</option>
-        <option value="09:00-09:30">09:00 - 09:30</option>
-        <option value="09:30-10:00">09:30 - 10:00</option>
-        <option value="10:00-10:30">10:00 - 10:30</option>
-        <option value="10:30-11:00">10:30 - 11:00</option>
-        <option value="11:00-11:30">11:00 - 11:30</option>
-        <option value="11:30-12:00">11:30 - 12:00</option>
-        <option value="12:00-12:30">12:00 - 12:30</option>
-        <option value="12:30-13:00">12:30 - 13:00</option>
-        <option value="13:00-13:30">13:00 - 13:30</option>
-        <option value="13:30-14:00">13:30 - 14:00</option>
-      </select>
-
-      <div style="background:white;padding:12px;border-radius:8px;margin-top:15px;">
-        <strong>Ödeme</strong>
-        <p>Kapıda nakit ödeme</p>
-      </div>
-
-      <button onclick="createOrder()">Siparişi Onayla</button>
-      <button class="back" onclick="showCart()">Sepete Dön</button>
-
-      <p id="orderMessage" style="text-align:center;margin-top:15px;"></p>
-    `;
+  loadSlotAvailability();
 }
 
+const STARTWITH_DELIVERY_SLOTS = [
+  "07:00-07:30","07:30-08:00","08:00-08:30","08:30-09:00",
+  "09:00-09:30","09:30-10:00","10:00-10:30","10:30-11:00",
+  "11:00-11:30","11:30-12:00","12:00-12:30","12:30-13:00",
+  "13:00-13:30","13:30-14:00"
+];
+
+async function loadSlotAvailability() {
+  const dateInput = document.getElementById("deliveryDate");
+  const select = document.getElementById("deliverySlot");
+  const info = document.getElementById("slotAvailabilityInfo");
+  if (!dateInput || !select || !info) return;
+
+  const selectedDate = dateInput.value;
+  select.innerHTML = `<option value="">Saatler kontrol ediliyor...</option>`;
+  select.disabled = true;
+
+  const { data: orders, error } = await supabaseClient
+    .from("orders")
+    .select("delivery_slot")
+    .eq("delivery_date", selectedDate);
+
+  if (error) {
+    select.innerHTML = `<option value="">Saatler yüklenemedi</option>`;
+    info.innerText = "Teslimat saatlerinin doluluk bilgisi alınamadı: " + error.message;
+    return;
+  }
+
+  const counts = {};
+  STARTWITH_DELIVERY_SLOTS.forEach(slot => counts[slot] = 0);
+  (orders || []).forEach(order => {
+    if (counts[order.delivery_slot] !== undefined) counts[order.delivery_slot]++;
+  });
+
+  let options = `<option value="">Teslimat saati seçin</option>`;
+  STARTWITH_DELIVERY_SLOTS.forEach(slot => {
+    const used = counts[slot] || 0;
+    const remaining = Math.max(0, 3 - used);
+    const label = used >= 3
+      ? `${slot.replace("-", " - ")} — DOLU · 3/3 sipariş`
+      : `${slot.replace("-", " - ")} — ${used}/3 sipariş · ${remaining} yer kaldı`;
+    options += `<option value="${slot}" ${used >= 3 ? "disabled" : ""}>${label}</option>`;
+  });
+
+  select.innerHTML = options;
+  select.disabled = false;
+  info.innerHTML = `Seçtiğiniz tarihin anlık kapasitesi gösteriliyor. <strong>Her yarım saatte maksimum 3 sipariş</strong> alıyoruz. Dolu saatler seçilemez.`;
+}
 
 /* =====================================================
    SİPARİŞ OLUŞTUR
@@ -1549,9 +1566,9 @@ async function createOrder() {
     "Teslimat saati kontrol ediliyor...";
 
 
-  // Seçilen tarih için delivery_slots tablosunda önceden kayıt bulunması
-  // zorunlu değil. Kapasiteyi doğrudan o tarih + saat aralığındaki
-  // mevcut siparişlerden kontrol ediyoruz. Böylece ileri tarihler seçilebilir.
+  // Her 30 dakikalık teslimat aralığında en fazla 3 sipariş alınır.
+  const slotCapacity = 3;
+
   const {
     count: orderCount,
     error: countError
@@ -1568,12 +1585,49 @@ async function createOrder() {
     return;
   }
 
-  const slotCapacity = 5;
-
   if ((orderCount || 0) >= slotCapacity) {
     message.innerText =
-      "Bu teslimat saati şu anda dolu. Lütfen başka bir teslimat saati seçin.";
+      "Bu saat dilimi için kota dolmuştur. Yarım saatlik teslimat aralıklarında maksimum 3 adet sipariş alıyoruz. Farklı bir saat dilimi seçerek siparişinize devam edebilirsiniz.";
+    await loadSlotAvailability();
     return;
+  }
+
+  // orders.delivery_slot_id boş bırakılamadığı için seçilen tarih + saat için
+  // delivery_slots kaydını buluyoruz; yoksa otomatik oluşturuyoruz.
+  let { data: deliverySlot, error: slotLookupError } = await supabaseClient
+    .from("delivery_slots")
+    .select("id, slot_date, start_time, end_time, capacity")
+    .eq("slot_date", deliveryDate)
+    .eq("start_time", startTime)
+    .eq("end_time", endTime)
+    .maybeSingle();
+
+  if (slotLookupError) {
+    message.innerText =
+      "Teslimat saati kontrolünde hata oluştu: " + slotLookupError.message;
+    return;
+  }
+
+  if (!deliverySlot) {
+    const { data: createdSlot, error: slotCreateError } = await supabaseClient
+      .from("delivery_slots")
+      .insert([{
+        slot_date: deliveryDate,
+        start_time: startTime,
+        end_time: endTime,
+        capacity: slotCapacity
+      }])
+      .select("id, slot_date, start_time, end_time, capacity")
+      .single();
+
+    if (slotCreateError) {
+      message.innerText =
+        "Seçilen tarih için teslimat saati oluşturulamadı: " +
+        slotCreateError.message;
+      return;
+    }
+
+    deliverySlot = createdSlot;
   }
 
 
@@ -1653,6 +1707,9 @@ async function createOrder() {
 
           delivery_slot:
             slot,
+
+          delivery_slot_id:
+            deliverySlot.id,
 
           neighborhood:
             neighborhood,
