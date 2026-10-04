@@ -641,7 +641,7 @@ async function createOrder() {
     data: deliverySlot,
     error: slotError
   } = await supabaseClient
-    .from("public_delivery_slots")
+    .from("delivery_slots")
     .select("id, slot_date, start_time, end_time, capacity")
     .eq("slot_date", deliveryDate)
     .eq("start_time", startTime)
