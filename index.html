@@ -145,6 +145,11 @@ const supabaseClient = supabase.createClient(
 
 let cart = [];
 
+
+/* =========================
+   ANA SAYFA / GİRİŞ
+========================= */
+
 function showRegister() {
   document.getElementById("home").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
@@ -163,6 +168,11 @@ function goHome() {
   document.getElementById("loginForm").style.display = "none";
 }
 
+
+/* =========================
+   KAYIT
+========================= */
+
 async function register() {
 
   const firstName = document.getElementById("firstName").value;
@@ -175,7 +185,15 @@ async function register() {
 
   const message = document.getElementById("registerMessage");
 
-  if (!firstName || !lastName || !phone || !email || !neighborhood || !address || !password) {
+  if (
+    !firstName ||
+    !lastName ||
+    !phone ||
+    !email ||
+    !neighborhood ||
+    !address ||
+    !password
+  ) {
     message.innerText = "Lütfen tüm alanları doldurun.";
     return;
   }
@@ -201,8 +219,14 @@ async function register() {
     return;
   }
 
-  message.innerText = "Kayıt başarılı! E-posta adresinizi kontrol edin.";
+  message.innerText =
+    "Kayıt başarılı! E-posta adresinizi kontrol edin.";
 }
+
+
+/* =========================
+   GİRİŞ
+========================= */
 
 async function login() {
 
@@ -213,10 +237,11 @@ async function login() {
 
   message.innerText = "Giriş yapılıyor...";
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
 
   if (error) {
     message.innerText = "Hata: " + error.message;
@@ -226,6 +251,11 @@ async function login() {
   showHome();
 }
 
+
+/* =========================
+   GİRİŞ YAPILMIŞ ANA SAYFA
+========================= */
+
 function showHome() {
 
   document.getElementById("registerForm").style.display = "none";
@@ -234,6 +264,7 @@ function showHome() {
 
   document.getElementById("home").innerHTML = `
     <h2>Hoş geldin!</h2>
+
     <p>Startwith'e hoş geldin. 🥗</p>
 
     <button onclick="showMenu()">
@@ -244,7 +275,7 @@ function showHome() {
       Sepetim
     </button>
 
-    <button class="secondary" onclick="alert('Siparişleriniz burada görünecek.')">
+    <button class="secondary" onclick="showOrders()">
       Siparişlerim
     </button>
 
@@ -254,21 +285,36 @@ function showHome() {
   `;
 }
 
+
+/* =========================
+   MENÜ
+========================= */
+
 function showMenu() {
 
   document.getElementById("home").innerHTML = `
     <h2>Kahvaltı Menüsü</h2>
 
-    <div style="background:white; padding:15px; border-radius:10px; margin-top:15px;">
+    <div style="
+      background:white;
+      padding:15px;
+      border-radius:10px;
+      margin-top:15px;
+    ">
+
       <h3>Startwith Fit Kahvaltı</h3>
 
-      <p>Yumurta, peynir, zeytin, yeşillik, domates, ekmek</p>
+      <p>
+        Yumurta, peynir, zeytin, yeşillik,
+        domates, ekmek
+      </p>
 
       <strong>249 TL</strong>
 
       <button onclick="addToCart()">
         Sepete Ekle
       </button>
+
     </div>
 
     <button class="secondary" onclick="showCart()">
@@ -281,6 +327,11 @@ function showMenu() {
   `;
 }
 
+
+/* =========================
+   SEPETE EKLE
+========================= */
+
 function addToCart() {
 
   const existingItem = cart.find(
@@ -288,17 +339,26 @@ function addToCart() {
   );
 
   if (existingItem) {
+
     existingItem.quantity++;
+
   } else {
+
     cart.push({
       name: "Startwith Fit Kahvaltı",
       price: 249,
       quantity: 1
     });
+
   }
 
   showCart();
 }
+
+
+/* =========================
+   SEPET
+========================= */
 
 function showCart() {
 
@@ -310,13 +370,23 @@ function showCart() {
     total += item.price * item.quantity;
 
     products += `
-      <div style="background:white; padding:15px; border-radius:10px; margin-top:10px;">
+      <div style="
+        background:white;
+        padding:15px;
+        border-radius:10px;
+        margin-top:10px;
+      ">
 
         <strong>${item.name}</strong>
 
         <p>${item.price} TL / adet</p>
 
-        <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
+        <div style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:15px;
+        ">
 
           <button
             style="width:50px; margin-top:0;"
@@ -357,9 +427,15 @@ function showCart() {
       Toplam: ${total} TL
     </h3>
 
-    <button onclick="alert('Sipariş oluşturma ekranına geçeceğiz.')">
-      Siparişi Oluştur
-    </button>
+    ${
+      cart.length > 0
+        ? `
+          <button onclick="showOrderForm()">
+            Siparişi Oluştur
+          </button>
+        `
+        : ""
+    }
 
     <button class="back" onclick="showMenu()">
       Menüye Dön
@@ -371,6 +447,11 @@ function showCart() {
   `;
 }
 
+
+/* =========================
+   ADET ARTIR / AZALT
+========================= */
+
 function increaseQuantity(index) {
 
   cart[index].quantity++;
@@ -381,9 +462,13 @@ function increaseQuantity(index) {
 function decreaseQuantity(index) {
 
   if (cart[index].quantity > 1) {
+
     cart[index].quantity--;
+
   } else {
+
     cart.splice(index, 1);
+
   }
 
   showCart();
@@ -395,6 +480,468 @@ function removeFromCart(index) {
 
   showCart();
 }
+
+
+/* =========================
+   TARİH YARDIMCILARI
+========================= */
+
+function getTomorrowDate() {
+
+  const tomorrow = new Date();
+
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const year = tomorrow.getFullYear();
+
+  const month = String(
+    tomorrow.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    tomorrow.getDate()
+  ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+/* =========================
+   SİPARİŞ EKRANI
+========================= */
+
+function showOrderForm() {
+
+  const tomorrow = getTomorrowDate();
+
+  document.getElementById("home").innerHTML = `
+
+    <h2>Sipariş Oluştur</h2>
+
+    <p>
+      Teslimat günü: <strong>Yarın</strong>
+    </p>
+
+    <label>
+      Teslimat Saati
+    </label>
+
+    <select id="deliverySlot">
+
+      <option value="">
+        Teslimat saati seçin
+      </option>
+
+      <option value="07:00-07:30">
+        07:00 - 07:30
+      </option>
+
+      <option value="07:30-08:00">
+        07:30 - 08:00
+      </option>
+
+      <option value="08:00-08:30">
+        08:00 - 08:30
+      </option>
+
+      <option value="08:30-09:00">
+        08:30 - 09:00
+      </option>
+
+      <option value="09:00-09:30">
+        09:00 - 09:30
+      </option>
+
+      <option value="09:30-10:00">
+        09:30 - 10:00
+      </option>
+
+      <option value="10:00-10:30">
+        10:00 - 10:30
+      </option>
+
+      <option value="10:30-11:00">
+        10:30 - 11:00
+      </option>
+
+      <option value="11:00-11:30">
+        11:00 - 11:30
+      </option>
+
+      <option value="11:30-12:00">
+        11:30 - 12:00
+      </option>
+
+      <option value="12:00-12:30">
+        12:00 - 12:30
+      </option>
+
+      <option value="12:30-13:00">
+        12:30 - 13:00
+      </option>
+
+      <option value="13:00-13:30">
+        13:00 - 13:30
+      </option>
+
+      <option value="13:30-14:00">
+        13:30 - 14:00
+      </option>
+
+    </select>
+
+    <div style="
+      background:white;
+      padding:15px;
+      border-radius:10px;
+      margin-top:20px;
+    ">
+
+      <strong>Ödeme</strong>
+
+      <p>
+        Kapıda ödeme
+      </p>
+
+    </div>
+
+    <button onclick="createOrder()">
+      Siparişi Onayla
+    </button>
+
+    <button class="back" onclick="showCart()">
+      Sepete Dön
+    </button>
+
+    <p id="orderMessage"
+       style="text-align:center; margin-top:15px;">
+    </p>
+  `;
+}
+
+
+/* =========================
+   SİPARİŞ OLUŞTUR
+========================= */
+
+async function createOrder() {
+
+  const slot =
+    document.getElementById("deliverySlot").value;
+
+  const message =
+    document.getElementById("orderMessage");
+
+  if (!slot) {
+
+    message.innerText =
+      "Lütfen teslimat saati seçin.";
+
+    return;
+  }
+
+  /*
+    18:00'dan sonra ertesi gün siparişi
+    online olarak kabul etmiyoruz.
+  */
+
+  const now = new Date();
+
+  const currentHour = now.getHours();
+
+  const currentMinute = now.getMinutes();
+
+  if (
+    currentHour > 18 ||
+    (currentHour === 18 && currentMinute >= 0)
+  ) {
+
+    message.innerText =
+      "Bu gün için online sipariş süresi dolmuştur. " +
+      "Eğer bu gün sizin için uygunsa, lütfen bizimle " +
+      "iletişime geçin; size yardımcı olmaya çalışacağız.";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Teslimat saati kontrol ediliyor...";
+
+
+  const deliveryDate = getTomorrowDate();
+
+
+  /*
+    Aynı gün ve aynı saat için mevcut
+    siparişleri kontrol ediyoruz.
+  */
+
+  const { count, error: countError } =
+    await supabaseClient
+      .from("orders")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("delivery_date", deliveryDate)
+      .eq("delivery_slot", slot);
+
+
+  if (countError) {
+
+    message.innerText =
+      "Sipariş kontrolünde hata oluştu: " +
+      countError.message;
+
+    return;
+  }
+
+
+  /*
+    Her yarım saat için maksimum 3 sipariş.
+  */
+
+  if (count >= 3) {
+
+    message.innerText =
+      "Bu teslimat saati şu anda dolu. " +
+      "Lütfen başka bir teslimat saati seçin. " +
+      "Eğer bu saat sizin için uygunsa, " +
+      "bizimle iletişime geçin; size yardımcı " +
+      "olmaya çalışacağız.";
+
+    return;
+  }
+
+
+  /*
+    Sepet toplamını hesapla.
+  */
+
+  let total = 0;
+
+  let quantity = 0;
+
+  cart.forEach(item => {
+
+    total += item.price * item.quantity;
+
+    quantity += item.quantity;
+
+  });
+
+
+  if (cart.length === 0) {
+
+    message.innerText =
+      "Sepetiniz boş.";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Sipariş oluşturuluyor...";
+
+
+  /*
+    Siparişi Supabase'e kaydet.
+  */
+
+  const { data, error } =
+    await supabaseClient
+      .from("orders")
+      .insert([
+        {
+          product_name: cart[0].name,
+          quantity: quantity,
+          total: total,
+          delivery_date: deliveryDate,
+          delivery_slot: slot,
+          status: "new"
+        }
+      ])
+      .select();
+
+
+  if (error) {
+
+    message.innerText =
+      "Sipariş oluşturulamadı: " +
+      error.message;
+
+    return;
+  }
+
+
+  /*
+    Başarılı sipariş.
+  */
+
+  cart = [];
+
+
+  document.getElementById("home").innerHTML = `
+
+    <h2>🎉 Siparişiniz Alındı!</h2>
+
+    <p style="text-align:center;">
+      Siparişiniz başarıyla oluşturuldu.
+    </p>
+
+    <div style="
+      background:white;
+      padding:15px;
+      border-radius:10px;
+      margin-top:20px;
+    ">
+
+      <p>
+        <strong>Teslimat günü:</strong>
+        ${deliveryDate}
+      </p>
+
+      <p>
+        <strong>Teslimat saati:</strong>
+        ${slot}
+      </p>
+
+      <p>
+        <strong>Ödeme:</strong>
+        Kapıda ödeme
+      </p>
+
+      <p>
+        <strong>Toplam:</strong>
+        ${total} TL
+      </p>
+
+    </div>
+
+    <button onclick="showHome()">
+      Ana Sayfa
+    </button>
+
+  `;
+}
+
+
+/* =========================
+   SİPARİŞLERİM
+========================= */
+
+async function showOrders() {
+
+  document.getElementById("home").innerHTML = `
+    <h2>Siparişlerim</h2>
+    <p>Siparişleriniz yükleniyor...</p>
+  `;
+
+
+  const {
+    data: orders,
+    error
+  } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    });
+
+
+  if (error) {
+
+    document.getElementById("home").innerHTML = `
+      <h2>Siparişlerim</h2>
+
+      <p>
+        Siparişler yüklenirken hata oluştu:
+        ${error.message}
+      </p>
+
+      <button class="back" onclick="showHome()">
+        Ana Sayfa
+      </button>
+    `;
+
+    return;
+  }
+
+
+  let orderList = "";
+
+
+  if (!orders || orders.length === 0) {
+
+    orderList =
+      "<p>Henüz siparişiniz bulunmuyor.</p>";
+
+  } else {
+
+    orders.forEach(order => {
+
+      orderList += `
+
+        <div style="
+          background:white;
+          padding:15px;
+          border-radius:10px;
+          margin-top:10px;
+        ">
+
+          <strong>
+            ${order.product_name}
+          </strong>
+
+          <p>
+            Adet: ${order.quantity}
+          </p>
+
+          <p>
+            Toplam: ${order.total} TL
+          </p>
+
+          <p>
+            Teslimat:
+            ${order.delivery_date}
+          </p>
+
+          <p>
+            Saat:
+            ${order.delivery_slot}
+          </p>
+
+          <p>
+            Durum:
+            ${order.status}
+          </p>
+
+        </div>
+
+      `;
+
+    });
+  }
+
+
+  document.getElementById("home").innerHTML = `
+
+    <h2>Siparişlerim</h2>
+
+    ${orderList}
+
+    <button class="back" onclick="showHome()">
+      Ana Sayfa
+    </button>
+
+  `;
+}
+
+
+/* =========================
+   ÇIKIŞ
+========================= */
 
 async function logout() {
 
