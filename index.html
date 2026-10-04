@@ -222,10 +222,8 @@ async function login() {
   }
 
   message.innerText = "Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...";
-
-setTimeout(() => {
   showHome();
-}, 1000);;
+
 function showHome() {
   document.getElementById("home").innerHTML = `
     <h2>Hoş geldin!</h2>
