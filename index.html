@@ -143,6 +143,8 @@ const supabaseClient = supabase.createClient(
   SUPABASE_KEY
 );
 
+let cart = [];
+
 function showRegister() {
   document.getElementById("home").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
@@ -224,23 +226,8 @@ async function login() {
   showHome();
 }
 
-function showMenu() {
-  document.getElementById("home").innerHTML = `
-    <h2>Kahvaltı Menüsü</h2>
-
-    <div style="background:white; padding:15px; border-radius:10px; margin-top:15px;">
-      <h3>Startwith Fit Kahvaltı</h3>
-      <p>Yumurta, peynir, zeytin, yeşillik, domates, ekmek</p>
-      <strong>249 TL</strong>
-      <button onclick="alert('Sepete eklendi!')">Sepete Ekle</button>
-    </div>
-
-    <button class="back" onclick="showHome()">
-      Geri
-    </button>
-  `;
-}
 function showHome() {
+
   document.getElementById("registerForm").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("home").style.display = "block";
@@ -250,8 +237,12 @@ function showHome() {
     <p>Startwith'e hoş geldin. 🥗</p>
 
     <button onclick="showMenu()">
-  Kahvaltı Menüsü
-  </button>
+      Kahvaltı Menüsü
+    </button>
+
+    <button class="secondary" onclick="showCart()">
+      Sepetim
+    </button>
 
     <button class="secondary" onclick="alert('Siparişleriniz burada görünecek.')">
       Siparişlerim
@@ -263,8 +254,106 @@ function showHome() {
   `;
 }
 
+function showMenu() {
+
+  document.getElementById("home").innerHTML = `
+    <h2>Kahvaltı Menüsü</h2>
+
+    <div style="background:white; padding:15px; border-radius:10px; margin-top:15px;">
+      <h3>Startwith Fit Kahvaltı</h3>
+
+      <p>Yumurta, peynir, zeytin, yeşillik, domates, ekmek</p>
+
+      <strong>249 TL</strong>
+
+      <button onclick="addToCart()">
+        Sepete Ekle
+      </button>
+    </div>
+
+    <button class="secondary" onclick="showCart()">
+      Sepetim
+    </button>
+
+    <button class="back" onclick="showHome()">
+      Geri
+    </button>
+  `;
+}
+
+function addToCart() {
+
+  cart.push({
+    name: "Startwith Fit Kahvaltı",
+    price: 249
+  });
+
+  alert("Ürün sepete eklendi!");
+
+  showCart();
+}
+
+function showCart() {
+
+  let total = 0;
+
+  cart.forEach(item => {
+    total += item.price;
+  });
+
+  let products = "";
+
+  cart.forEach((item, index) => {
+    products += `
+      <div style="background:white; padding:15px; border-radius:10px; margin-top:10px;">
+        <strong>${item.name}</strong>
+        <p>${item.price} TL</p>
+
+        <button onclick="removeFromCart(${index})">
+          Ürünü Sil
+        </button>
+      </div>
+    `;
+  });
+
+  if (cart.length === 0) {
+    products = "<p>Sepetiniz boş.</p>";
+  }
+
+  document.getElementById("home").innerHTML = `
+    <h2>Sepetim</h2>
+
+    ${products}
+
+    <h3 style="margin-top:20px;">
+      Toplam: ${total} TL
+    </h3>
+
+    <button onclick="alert('Sipariş oluşturma ekranına geçeceğiz.')">
+      Siparişi Oluştur
+    </button>
+
+    <button class="back" onclick="showMenu()">
+      Menüye Dön
+    </button>
+
+    <button class="back" onclick="showHome()">
+      Ana Sayfa
+    </button>
+  `;
+}
+
+function removeFromCart(index) {
+
+  cart.splice(index, 1);
+
+  showCart();
+}
+
 async function logout() {
+
   await supabaseClient.auth.signOut();
+
   location.reload();
 }
 
