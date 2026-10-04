@@ -316,38 +316,63 @@ async function showHome() {
 function showMenu() {
 
   const products = [
+
     {
       name: "Klasik Kahvaltı",
-      price: 249
+      price: 249,
+      description:
+        "Organik haşlanmış yumurta, ev yapımı lor peyniri ve çörek otu, kalamata zeytin, kokteyl domates ve iki dilim tam buğday ekmeği."
     },
+
     {
       name: "Ege Kahvaltı",
-      price: 269
+      price: 269,
+      description:
+        "Organik haşlanmış yumurta, ev yapımı sepet peyniri, Edremit yeşil ve siyah zeytin, taze mevsimlik yeşillik ve zeytinyağı, iki dilim tam buğday ekmeği."
     },
+
     {
       name: "Fit Kahvaltı",
-      price: 279
+      price: 279,
+      description:
+        "İki adet organik yumurtadan omlet, ev yapımı lor peyniri ve çörek otu, ev yapımı salam, kokteyl domates, Çengelköy salatalık ve bir dilim tam buğday ekmeği."
     },
+
     {
       name: "Sporcu Kahvaltı",
-      price: 269
+      price: 269,
+      description:
+        "İki adet organik yumurtadan omlet, ev yapımı salam, ev yapımı sepet peyniri, pirinç kreması ve iki dilim tam buğday ekmeği."
     },
+
     {
       name: "Tatlı Kahvaltı",
-      price: 289
+      price: 289,
+      description:
+        "3 adet pancake, akçaağaç şurubu, ev yapımı kaymak, yaban mersini, ahududu ve vanilyalı pirinç kreması."
     },
+
     {
       name: "Tam Buğday Ekmeği (400 g)",
-      price: 90
+      price: 90,
+      description:
+        "400 gram tam buğday ekmeği."
     },
+
     {
       name: "Ev Yapımı Kaymak (100 g)",
-      price: 125
+      price: 125,
+      description:
+        "100 gram ev yapımı kaymak."
     },
+
     {
       name: "Ev Yapımı Salam (200 g)",
-      price: 110
+      price: 110,
+      description:
+        "200 gram ev yapımı salam."
     }
+
   ];
 
 
@@ -357,46 +382,70 @@ function showMenu() {
   products.forEach(product => {
 
     menuHtml += `
+
       <div style="
         background:white;
-        padding:12px;
+        padding:14px;
         border-radius:8px;
-        margin-top:8px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:10px;
+        margin-top:9px;
       ">
 
-        <div>
-          <strong>
-            ${product.name}
-          </strong>
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:10px;
+        ">
 
           <div style="
-            margin-top:4px;
-            font-size:14px;
-            color:#555;
+            flex:1;
           ">
-            ${product.price} TL
+
+            <strong style="
+              font-size:16px;
+            ">
+              ${product.name}
+            </strong>
+
+            <div style="
+              margin-top:7px;
+              font-size:14px;
+              line-height:1.5;
+              color:#555;
+            ">
+              ${product.description}
+            </div>
+
+            <div style="
+              margin-top:8px;
+              font-weight:bold;
+              font-size:15px;
+            ">
+              ${product.price.toLocaleString("tr-TR")} TL
+            </div>
+
           </div>
+
+
+          <button
+            style="
+              width:auto;
+              margin:0;
+              padding:8px 12px;
+              flex-shrink:0;
+            "
+            onclick='addToCart(
+              ${JSON.stringify(product.name)},
+              ${product.price}
+            )'
+          >
+            Ekle
+          </button>
+
         </div>
 
-        <button
-          style="
-            width:auto;
-            margin:0;
-            padding:8px 12px;
-          "
-          onclick='addToCart(
-            ${JSON.stringify(product.name)},
-            ${product.price}
-          )'
-        >
-          Ekle
-        </button>
-
       </div>
+
     `;
   });
 
@@ -420,6 +469,7 @@ function showMenu() {
     >
       Ana Sayfa
     </button>
+
   `;
 }
 
@@ -504,7 +554,7 @@ function showCart() {
           font-size:14px;
           color:#555;
         ">
-          ${item.price} TL / adet
+          ${item.price.toLocaleString("tr-TR")} TL / adet
         </div>
 
         <div style="
@@ -548,13 +598,16 @@ function showCart() {
         </button>
 
       </div>
+
     `;
   });
 
 
   if (cart.length === 0) {
+
     products =
       "<p>Sepetiniz boş.</p>";
+
   }
 
 
@@ -594,6 +647,7 @@ function showCart() {
     >
       Ana Sayfa
     </button>
+
   `;
 }
 
@@ -1018,8 +1072,6 @@ async function createOrder() {
 
   });
 
-
-  /* BİR SİPARİŞTEKİ TÜM ÜRÜNLERİ BİRLEŞTİR */
 
   const productSummary =
     cart
