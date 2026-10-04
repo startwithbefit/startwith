@@ -1362,10 +1362,8 @@ async function loadSlotAvailability() {
   select.innerHTML = `<option value="">Saatler kontrol ediliyor...</option>`;
   select.disabled = true;
 
-  const { data: orders, error } = await supabaseClient
-    .from("orders")
-    .select("delivery_slot")
-    .eq("delivery_date", selectedDate);
+  const { data: availability, error } = await supabaseClient
+    .rpc("get_delivery_slot_availability", { p_slot_date: selectedDate });
 
   if (error) {
     select.innerHTML = `<option value="">Saatler yüklenemedi</option>`;
@@ -1373,20 +1371,19 @@ async function loadSlotAvailability() {
     return;
   }
 
-  const counts = {};
-  STARTWITH_DELIVERY_SLOTS.forEach(slot => counts[slot] = 0);
-  (orders || []).forEach(order => {
-    if (counts[order.delivery_slot] !== undefined) counts[order.delivery_slot]++;
+  const remainingBySlot = {};
+  (availability || []).forEach(row => {
+    remainingBySlot[row.delivery_slot] = Number(row.remaining);
   });
 
   let options = `<option value="">Teslimat saati seçin</option>`;
   STARTWITH_DELIVERY_SLOTS.forEach(slot => {
-    const used = counts[slot] || 0;
-    const remaining = Math.max(0, 3 - used);
-    const label = used >= 3
+    const remaining = remainingBySlot[slot] ?? 3;
+    const full = remaining <= 0;
+    const label = full
       ? `${slot.replace("-", " - ")} — DOLU`
       : `${slot.replace("-", " - ")} — ${remaining} kontenjan kaldı`;
-    options += `<option value="${slot}" ${used >= 3 ? "disabled" : ""}>${label}</option>`;
+    options += `<option value="${slot}" ${full ? "disabled" : ""}>${label}</option>`;
   });
 
   select.innerHTML = options;
@@ -1580,28 +1577,23 @@ async function createOrder() {
     "Teslimat saati kontrol ediliyor...";
 
 
-  // Her 30 dakikalık teslimat aralığında en fazla 3 sipariş alınır.
-  const slotCapacity = 3;
-
-  const {
-    count: orderCount,
-    error: countError
-  } = await supabaseClient
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("delivery_date", deliveryDate)
-    .eq("delivery_slot", slot);
+  // Kontenjan tüm müşteriler için ortaktır. RLS'den bağımsız güvenli RPC ile kontrol edilir.
+  const { data: capacityRows, error: countError } = await supabaseClient
+    .rpc("get_delivery_slot_availability", { p_slot_date: deliveryDate });
 
   if (countError) {
     message.innerText =
-      "Teslimat kapasitesi kontrolünde hata oluştu: " +
-      countError.message;
+      "Teslimat kapasitesi kontrolünde hata oluştu: " + countError.message;
     return;
   }
 
-  if ((orderCount || 0) >= slotCapacity) {
+  const selectedCapacity = (capacityRows || []).find(
+    row => row.delivery_slot === slot
+  );
+
+  if (!selectedCapacity || Number(selectedCapacity.remaining) <= 0) {
     message.innerText =
-      "Bu saat dilimi için kota dolmuştur. Yarım saatlik teslimat aralıklarında maksimum 3 adet sipariş alıyoruz. Farklı bir saat dilimi seçerek siparişinize devam edebilirsiniz.";
+      "Bu teslimat saati dolmuştur. Lütfen farklı bir saat dilimi seçerek siparişinize devam edin.";
     await loadSlotAvailability();
     return;
   }
