@@ -270,12 +270,12 @@ async function showHome() {
   document.getElementById("home").style.display = "block";
 
   document.getElementById("home").innerHTML = `
-    <h2>Hoş geldin!</h2>
+    <h2>start with. be fit</h2>
 
-    <p>Startwith'e hoş geldin. 🥗</p>
+    <p>Sağlıklı güne iyi bir başlangıç.</p>
 
     <button onclick="showMenu()">
-      Kahvaltı Menüsü
+      Menü
     </button>
 
     <button class="secondary" onclick="showCart()">
@@ -315,37 +315,110 @@ async function showHome() {
 
 function showMenu() {
 
+  const products = [
+    {
+      name: "Klasik Kahvaltı",
+      price: 249
+    },
+    {
+      name: "Ege Kahvaltı",
+      price: 269
+    },
+    {
+      name: "Fit Kahvaltı",
+      price: 279
+    },
+    {
+      name: "Sporcu Kahvaltı",
+      price: 269
+    },
+    {
+      name: "Tatlı Kahvaltı",
+      price: 289
+    },
+    {
+      name: "Tam Buğday Ekmeği (400 g)",
+      price: 90
+    },
+    {
+      name: "Ev Yapımı Kaymak (100 g)",
+      price: 125
+    },
+    {
+      name: "Ev Yapımı Salam (200 g)",
+      price: 110
+    }
+  ];
+
+
+  let menuHtml = "";
+
+
+  products.forEach(product => {
+
+    menuHtml += `
+      <div style="
+        background:white;
+        padding:12px;
+        border-radius:8px;
+        margin-top:8px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+      ">
+
+        <div>
+          <strong>
+            ${product.name}
+          </strong>
+
+          <div style="
+            margin-top:4px;
+            font-size:14px;
+            color:#555;
+          ">
+            ${product.price} TL
+          </div>
+        </div>
+
+        <button
+          style="
+            width:auto;
+            margin:0;
+            padding:8px 12px;
+          "
+          onclick='addToCart(
+            ${JSON.stringify(product.name)},
+            ${product.price}
+          )'
+        >
+          Ekle
+        </button>
+
+      </div>
+    `;
+  });
+
+
   document.getElementById("home").innerHTML = `
-    <h2>Kahvaltı Menüsü</h2>
 
-    <div style="
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      margin-top:15px;
-    ">
+    <h2>Menü</h2>
 
-      <h3>Startwith Fit Kahvaltı</h3>
+    ${menuHtml}
 
-      <p>
-        Yumurta, peynir, zeytin, yeşillik,
-        domates, ekmek
-      </p>
-
-      <strong>249 TL</strong>
-
-      <button onclick="addToCart()">
-        Sepete Ekle
-      </button>
-
-    </div>
-
-    <button class="secondary" onclick="showCart()">
+    <button
+      class="secondary"
+      onclick="showCart()"
+    >
       Sepetim
     </button>
 
-    <button class="back" onclick="showHome()">
-      Geri
+    <button
+      class="back"
+      onclick="showHome()"
+    >
+      Ana Sayfa
     </button>
   `;
 }
@@ -355,21 +428,28 @@ function showMenu() {
    SEPETE EKLE
 ========================= */
 
-function addToCart() {
+function addToCart(name, price) {
 
-  const existingItem = cart.find(
-    item => item.name === "Startwith Fit Kahvaltı"
-  );
+  const existingItem =
+    cart.find(
+      item => item.name === name
+    );
+
 
   if (existingItem) {
+
     existingItem.quantity++;
+
   } else {
+
     cart.push({
-      name: "Startwith Fit Kahvaltı",
-      price: 249,
+      name: name,
+      price: price,
       quantity: 1
     });
+
   }
+
 
   showCart();
 }
@@ -384,48 +464,86 @@ function showCart() {
   let total = 0;
   let products = "";
 
+
   cart.forEach((item, index) => {
 
-    total += item.price * item.quantity;
+    total +=
+      item.price *
+      item.quantity;
+
 
     products += `
+
       <div style="
         background:white;
-        padding:15px;
-        border-radius:10px;
-        margin-top:10px;
+        padding:12px;
+        border-radius:8px;
+        margin-top:8px;
       ">
 
-        <strong>${item.name}</strong>
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:10px;
+        ">
 
-        <p>${item.price} TL / adet</p>
+          <strong>
+            ${item.name}
+          </strong>
+
+          <strong>
+            ${(item.price * item.quantity)
+              .toLocaleString("tr-TR")} TL
+          </strong>
+
+        </div>
+
+        <div style="
+          margin-top:8px;
+          font-size:14px;
+          color:#555;
+        ">
+          ${item.price} TL / adet
+        </div>
 
         <div style="
           display:flex;
           align-items:center;
           justify-content:center;
           gap:15px;
+          margin-top:10px;
         ">
 
           <button
-            style="width:50px; margin-top:0;"
-            onclick="decreaseQuantity(${index})">
+            style="
+              width:42px;
+              margin-top:0;
+            "
+            onclick="decreaseQuantity(${index})"
+          >
             −
           </button>
 
-          <strong style="font-size:18px;">
+          <strong style="font-size:17px;">
             ${item.quantity}
           </strong>
 
           <button
-            style="width:50px; margin-top:0;"
-            onclick="increaseQuantity(${index})">
+            style="
+              width:42px;
+              margin-top:0;
+            "
+            onclick="increaseQuantity(${index})"
+          >
             +
           </button>
 
         </div>
 
-        <button onclick="removeFromCart(${index})">
+        <button
+          onclick="removeFromCart(${index})"
+        >
           Ürünü Sil
         </button>
 
@@ -433,34 +551,47 @@ function showCart() {
     `;
   });
 
+
   if (cart.length === 0) {
-    products = "<p>Sepetiniz boş.</p>";
+    products =
+      "<p>Sepetiniz boş.</p>";
   }
 
+
   document.getElementById("home").innerHTML = `
+
     <h2>Sepetim</h2>
 
     ${products}
 
     <h3 style="margin-top:20px;">
-      Toplam: ${total} TL
+      Toplam:
+      ${total.toLocaleString("tr-TR")} TL
     </h3>
 
     ${
       cart.length > 0
         ? `
-          <button onclick="showOrderForm()">
+          <button
+            onclick="showOrderForm()"
+          >
             Siparişi Oluştur
           </button>
         `
         : ""
     }
 
-    <button class="back" onclick="showMenu()">
+    <button
+      class="back"
+      onclick="showMenu()"
+    >
       Menüye Dön
     </button>
 
-    <button class="back" onclick="showHome()">
+    <button
+      class="back"
+      onclick="showHome()"
+    >
       Ana Sayfa
     </button>
   `;
@@ -472,23 +603,35 @@ function showCart() {
 ========================= */
 
 function increaseQuantity(index) {
+
   cart[index].quantity++;
+
   showCart();
 }
 
+
 function decreaseQuantity(index) {
 
-  if (cart[index].quantity > 1) {
+  if (
+    cart[index].quantity > 1
+  ) {
+
     cart[index].quantity--;
+
   } else {
+
     cart.splice(index, 1);
+
   }
 
   showCart();
 }
 
+
 function removeFromCart(index) {
+
   cart.splice(index, 1);
+
   showCart();
 }
 
@@ -499,21 +642,29 @@ function removeFromCart(index) {
 
 function getTomorrowDate() {
 
-  const tomorrow = new Date();
+  const tomorrow =
+    new Date();
 
   tomorrow.setDate(
     tomorrow.getDate() + 1
   );
 
-  const year = tomorrow.getFullYear();
 
-  const month = String(
-    tomorrow.getMonth() + 1
-  ).padStart(2, "0");
+  const year =
+    tomorrow.getFullYear();
 
-  const day = String(
-    tomorrow.getDate()
-  ).padStart(2, "0");
+
+  const month =
+    String(
+      tomorrow.getMonth() + 1
+    ).padStart(2, "0");
+
+
+  const day =
+    String(
+      tomorrow.getDate()
+    ).padStart(2, "0");
+
 
   return `${year}-${month}-${day}`;
 }
@@ -530,10 +681,13 @@ function showOrderForm() {
     <h2>Sipariş Oluştur</h2>
 
     <p>
-      Teslimat günü: <strong>Yarın</strong>
+      Teslimat günü:
+      <strong>Yarın</strong>
     </p>
 
-    <label>Teslimat Saati</label>
+    <label>
+      Teslimat Saati
+    </label>
 
     <select id="deliverySlot">
 
@@ -541,48 +695,106 @@ function showOrderForm() {
         Teslimat saati seçin
       </option>
 
-      <option value="07:00-07:30">07:00 - 07:30</option>
-      <option value="07:30-08:00">07:30 - 08:00</option>
-      <option value="08:00-08:30">08:00 - 08:30</option>
-      <option value="08:30-09:00">08:30 - 09:00</option>
-      <option value="09:00-09:30">09:00 - 09:30</option>
-      <option value="09:30-10:00">09:30 - 10:00</option>
-      <option value="10:00-10:30">10:00 - 10:30</option>
-      <option value="10:30-11:00">10:30 - 11:00</option>
-      <option value="11:00-11:30">11:00 - 11:30</option>
-      <option value="11:30-12:00">11:30 - 12:00</option>
-      <option value="12:00-12:30">12:00 - 12:30</option>
-      <option value="12:30-13:00">12:30 - 13:00</option>
-      <option value="13:00-13:30">13:00 - 13:30</option>
-      <option value="13:30-14:00">13:30 - 14:00</option>
+      <option value="07:00-07:30">
+        07:00 - 07:30
+      </option>
+
+      <option value="07:30-08:00">
+        07:30 - 08:00
+      </option>
+
+      <option value="08:00-08:30">
+        08:00 - 08:30
+      </option>
+
+      <option value="08:30-09:00">
+        08:30 - 09:00
+      </option>
+
+      <option value="09:00-09:30">
+        09:00 - 09:30
+      </option>
+
+      <option value="09:30-10:00">
+        09:30 - 10:00
+      </option>
+
+      <option value="10:00-10:30">
+        10:00 - 10:30
+      </option>
+
+      <option value="10:30-11:00">
+        10:30 - 11:00
+      </option>
+
+      <option value="11:00-11:30">
+        11:00 - 11:30
+      </option>
+
+      <option value="11:30-12:00">
+        11:30 - 12:00
+      </option>
+
+      <option value="12:00-12:30">
+        12:00 - 12:30
+      </option>
+
+      <option value="12:30-13:00">
+        12:30 - 13:00
+      </option>
+
+      <option value="13:00-13:30">
+        13:00 - 13:30
+      </option>
+
+      <option value="13:30-14:00">
+        13:30 - 14:00
+      </option>
 
     </select>
 
+
     <div style="
       background:white;
-      padding:15px;
-      border-radius:10px;
-      margin-top:20px;
+      padding:12px;
+      border-radius:8px;
+      margin-top:15px;
     ">
 
-      <strong>Ödeme</strong>
+      <strong>
+        Ödeme
+      </strong>
 
-      <p>Kapıda ödeme</p>
+      <p>
+        Kapıda ödeme
+      </p>
 
     </div>
 
-    <button onclick="createOrder()">
+
+    <button
+      onclick="createOrder()"
+    >
       Siparişi Onayla
     </button>
 
-    <button class="back" onclick="showCart()">
+
+    <button
+      class="back"
+      onclick="showCart()"
+    >
       Sepete Dön
     </button>
 
+
     <p
       id="orderMessage"
-      style="text-align:center; margin-top:15px;"
+      style="
+        text-align:center;
+        margin-top:15px;
+      "
     ></p>
+
   `;
 }
 
@@ -594,14 +806,22 @@ function showOrderForm() {
 async function createOrder() {
 
   const slot =
-    document.getElementById("deliverySlot").value;
+    document.getElementById(
+      "deliverySlot"
+    ).value;
+
 
   const message =
-    document.getElementById("orderMessage");
+    document.getElementById(
+      "orderMessage"
+    );
+
 
   if (!slot) {
+
     message.innerText =
       "Lütfen teslimat saati seçin.";
+
     return;
   }
 
@@ -609,10 +829,14 @@ async function createOrder() {
   const {
     data: { user },
     error: userError
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient.auth.getUser();
 
 
-  if (userError || !user) {
+  if (
+    userError ||
+    !user
+  ) {
 
     message.innerText =
       "Oturumunuz bulunamadı. Lütfen tekrar giriş yapın.";
@@ -623,6 +847,7 @@ async function createOrder() {
 
   const neighborhood =
     user.user_metadata?.neighborhood;
+
 
   const address =
     user.user_metadata?.address;
@@ -635,11 +860,15 @@ async function createOrder() {
       (user.user_metadata?.last_name || "")
     ).trim();
 
+
   const phone =
     user.user_metadata?.phone || "";
 
 
-  if (!neighborhood || !address) {
+  if (
+    !neighborhood ||
+    !address
+  ) {
 
     message.innerText =
       "Adres bilgileriniz eksik. Lütfen çıkış yapıp tekrar giriş yapın.";
@@ -648,14 +877,27 @@ async function createOrder() {
   }
 
 
-  const now = new Date();
+  const now =
+    new Date();
 
-  if (now.getHours() >= 18) {
+
+  if (
+    now.getHours() >= 18
+  ) {
 
     message.innerText =
-      "Bu gün için online sipariş süresi dolmuştur. " +
-      "Eğer bu gün sizin için uygunsa, lütfen bizimle " +
-      "iletişime geçin; size yardımcı olmaya çalışacağız.";
+      "Bu gün için online sipariş süresi dolmuştur.";
+
+    return;
+  }
+
+
+  if (
+    cart.length === 0
+  ) {
+
+    message.innerText =
+      "Sepetiniz boş.";
 
     return;
   }
@@ -668,8 +910,10 @@ async function createOrder() {
   const slotParts =
     slot.split("-");
 
+
   const startTime =
     slotParts[0] + ":00";
+
 
   const endTime =
     slotParts[1] + ":00";
@@ -682,15 +926,25 @@ async function createOrder() {
   const {
     data: deliverySlot,
     error: slotError
-  } = await supabaseClient
-    .from("delivery_slots")
-    .select(
-      "id, slot_date, start_time, end_time, capacity"
-    )
-    .eq("slot_date", deliveryDate)
-    .eq("start_time", startTime)
-    .eq("end_time", endTime)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("delivery_slots")
+      .select(
+        "id, slot_date, start_time, end_time, capacity"
+      )
+      .eq(
+        "slot_date",
+        deliveryDate
+      )
+      .eq(
+        "start_time",
+        startTime
+      )
+      .eq(
+        "end_time",
+        endTime
+      )
+      .maybeSingle();
 
 
   if (slotError) {
@@ -715,14 +969,15 @@ async function createOrder() {
   const {
     data: orderCount,
     error: countError
-  } = await supabaseClient
-    .rpc(
-      "get_slot_order_count",
-      {
-        p_delivery_slot_id:
-          deliverySlot.id
-      }
-    );
+  } =
+    await supabaseClient
+      .rpc(
+        "get_slot_order_count",
+        {
+          p_delivery_slot_id:
+            deliverySlot.id
+        }
+      );
 
 
   if (countError) {
@@ -741,15 +996,15 @@ async function createOrder() {
   ) {
 
     message.innerText =
-      "Bu teslimat saati şu anda dolu. " +
-      "Lütfen başka bir teslimat saati seçin.";
+      "Bu teslimat saati şu anda dolu. Lütfen başka bir teslimat saati seçin.";
 
     return;
   }
 
 
   let total = 0;
-  let quantity = 0;
+  let totalQuantity = 0;
+
 
   cart.forEach(item => {
 
@@ -757,19 +1012,22 @@ async function createOrder() {
       item.price *
       item.quantity;
 
-    quantity +=
+
+    totalQuantity +=
       item.quantity;
 
   });
 
 
-  if (cart.length === 0) {
+  /* BİR SİPARİŞTEKİ TÜM ÜRÜNLERİ BİRLEŞTİR */
 
-    message.innerText =
-      "Sepetiniz boş.";
-
-    return;
-  }
+  const productSummary =
+    cart
+      .map(
+        item =>
+          `${item.name} x${item.quantity}`
+      )
+      .join(" + ");
 
 
   message.innerText =
@@ -778,25 +1036,26 @@ async function createOrder() {
 
   const {
     error
-  } = await supabaseClient
-    .from("orders")
-    .insert([
-      {
-        user_id: user.id,
-        product_name: cart[0].name,
-        quantity: quantity,
-        total: total,
-        total_amount: total,
-        delivery_date: deliveryDate,
-        delivery_slot: slot,
-        delivery_slot_id: deliverySlot.id,
-        neighborhood: neighborhood,
-        address: address,
-        customer_name: customerName,
-        phone: phone,
-        status: "new"
-      }
-    ]);
+  } =
+    await supabaseClient
+      .from("orders")
+      .insert([
+        {
+          user_id: user.id,
+          product_name: productSummary,
+          quantity: totalQuantity,
+          total: total,
+          total_amount: total,
+          delivery_date: deliveryDate,
+          delivery_slot: slot,
+          delivery_slot_id: deliverySlot.id,
+          neighborhood: neighborhood,
+          address: address,
+          customer_name: customerName,
+          phone: phone,
+          status: "new"
+        }
+      ]);
 
 
   if (error) {
@@ -814,9 +1073,13 @@ async function createOrder() {
 
   document.getElementById("home").innerHTML = `
 
-    <h2>🎉 Siparişiniz Alındı!</h2>
+    <h2>
+      Siparişiniz Alındı!
+    </h2>
 
-    <p style="text-align:center;">
+    <p style="
+      text-align:center;
+    ">
       Siparişiniz başarıyla oluşturuldu.
     </p>
 
@@ -828,38 +1091,60 @@ async function createOrder() {
     ">
 
       <p>
-        <strong>Teslimat günü:</strong>
+        <strong>
+          Teslimat günü:
+        </strong>
+
         ${deliveryDate}
       </p>
 
       <p>
-        <strong>Teslimat saati:</strong>
+        <strong>
+          Teslimat saati:
+        </strong>
+
         ${slot}
       </p>
 
       <p>
-        <strong>Mahalle:</strong>
-        ${neighborhood}
-      </p>
+        <strong>
+          Adres:
+        </strong>
 
-      <p>
-        <strong>Adres:</strong>
         ${address}
       </p>
 
       <p>
-        <strong>Ödeme:</strong>
-        Kapıda ödeme
+        <strong>
+          Sipariş:
+        </strong>
+
+        ${productSummary}
       </p>
 
       <p>
-        <strong>Toplam:</strong>
-        ${total} TL
+        <strong>
+          Toplam:
+        </strong>
+
+        ${total.toLocaleString("tr-TR")}
+        TL
+      </p>
+
+      <p>
+        <strong>
+          Ödeme:
+        </strong>
+
+        Kapıda ödeme
       </p>
 
     </div>
 
-    <button onclick="showHome()">
+
+    <button
+      onclick="showHome()"
+    >
       Ana Sayfa
     </button>
 
@@ -882,15 +1167,22 @@ async function showOrders() {
   const {
     data: { user },
     error: userError
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient.auth.getUser();
 
 
-  if (userError || !user) {
+  if (
+    userError ||
+    !user
+  ) {
 
     document.getElementById("home").innerHTML = `
+
       <h2>Siparişlerim</h2>
 
-      <p>Lütfen tekrar giriş yapın.</p>
+      <p>
+        Lütfen tekrar giriş yapın.
+      </p>
 
       <button
         class="back"
@@ -898,6 +1190,7 @@ async function showOrders() {
       >
         Ana Sayfa
       </button>
+
     `;
 
     return;
@@ -907,18 +1200,26 @@ async function showOrders() {
   const {
     data: orders,
     error
-  } = await supabaseClient
-    .from("orders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", {
-      ascending: false
-    });
+  } =
+    await supabaseClient
+      .from("orders")
+      .select("*")
+      .eq(
+        "user_id",
+        user.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
 
   if (error) {
 
     document.getElementById("home").innerHTML = `
+
       <h2>Siparişlerim</h2>
 
       <p>
@@ -932,6 +1233,7 @@ async function showOrders() {
       >
         Ana Sayfa
       </button>
+
     `;
 
     return;
@@ -941,7 +1243,10 @@ async function showOrders() {
   let orderList = "";
 
 
-  if (!orders || orders.length === 0) {
+  if (
+    !orders ||
+    orders.length === 0
+  ) {
 
     orderList =
       "<p>Henüz siparişiniz bulunmuyor.</p>";
@@ -954,9 +1259,9 @@ async function showOrders() {
 
         <div style="
           background:white;
-          padding:15px;
-          border-radius:10px;
-          margin-top:10px;
+          padding:12px;
+          border-radius:8px;
+          margin-top:8px;
         ">
 
           <strong>
@@ -964,7 +1269,8 @@ async function showOrders() {
           </strong>
 
           <p>
-            Adet: ${order.quantity}
+            Adet:
+            ${order.quantity}
           </p>
 
           <p>
@@ -998,6 +1304,7 @@ async function showOrders() {
           </p>
 
         </div>
+
       `;
     });
   }
@@ -1029,7 +1336,8 @@ async function showAdminPanel() {
   const {
     data: { user },
     error: userError
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient.auth.getUser();
 
 
   if (
@@ -1039,6 +1347,7 @@ async function showAdminPanel() {
   ) {
 
     document.getElementById("home").innerHTML = `
+
       <h2>Yönetici Paneli</h2>
 
       <p>
@@ -1051,6 +1360,7 @@ async function showAdminPanel() {
       >
         Ana Sayfa
       </button>
+
     `;
 
     return;
@@ -1059,25 +1369,17 @@ async function showAdminPanel() {
 
   document.getElementById("home").innerHTML = `
 
-    <div style="
-      margin-bottom:15px;
+    <h2>
+      Yönetici Paneli
+    </h2>
+
+    <p style="
+      margin-top:0;
+      color:#666;
+      font-size:14px;
     ">
-
-      <h2 style="
-        margin-bottom:5px;
-      ">
-        Yönetici Paneli
-      </h2>
-
-      <p style="
-        margin-top:0;
-        color:#666;
-        font-size:14px;
-      ">
-        Sipariş hazırlama listesi
-      </p>
-
-    </div>
+      Sipariş hazırlama listesi
+    </p>
 
 
     <div style="
@@ -1122,7 +1424,9 @@ async function showAdminPanel() {
 
 
   document
-    .getElementById("adminDateFilter")
+    .getElementById(
+      "adminDateFilter"
+    )
     .addEventListener(
       "change",
       loadAdminOrders
@@ -1162,11 +1466,15 @@ function escapeHtml(value) {
 async function loadAdminOrders() {
 
   const container =
-    document.getElementById("adminOrders");
+    document.getElementById(
+      "adminOrders"
+    );
+
 
   if (!container) {
     return;
   }
+
 
   container.innerHTML =
     "<p>Siparişler yükleniyor...</p>";
@@ -1174,7 +1482,8 @@ async function loadAdminOrders() {
 
   const {
     data: { user }
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient.auth.getUser();
 
 
   if (
@@ -1192,18 +1501,28 @@ async function loadAdminOrders() {
   const {
     data: orders,
     error
-  } = await supabaseClient
-    .from("orders")
-    .select("*")
-    .order("delivery_date", {
-      ascending: true
-    })
-    .order("delivery_slot", {
-      ascending: true
-    })
-    .order("created_at", {
-      ascending: true
-    });
+  } =
+    await supabaseClient
+      .from("orders")
+      .select("*")
+      .order(
+        "delivery_date",
+        {
+          ascending: true
+        }
+      )
+      .order(
+        "delivery_slot",
+        {
+          ascending: true
+        }
+      )
+      .order(
+        "created_at",
+        {
+          ascending: true
+        }
+      );
 
 
   if (error) {
@@ -1229,10 +1548,13 @@ async function loadAdminOrders() {
     orders || [];
 
 
-  if (filter === "tomorrow") {
+  if (
+    filter === "tomorrow"
+  ) {
 
     const tomorrow =
       getTomorrowDate();
+
 
     filteredOrders =
       filteredOrders.filter(
@@ -1242,19 +1564,24 @@ async function loadAdminOrders() {
   }
 
 
-  /* TARİH GRUPLARI */
-
   const dateGroups = {};
 
 
   filteredOrders.forEach(order => {
 
     const date =
-      order.delivery_date || "Tarih yok";
+      order.delivery_date ||
+      "Tarih yok";
 
-    if (!dateGroups[date]) {
+
+    if (
+      !dateGroups[date]
+    ) {
+
       dateGroups[date] = [];
+
     }
+
 
     dateGroups[date].push(order);
 
@@ -1268,7 +1595,9 @@ async function loadAdminOrders() {
     Object.keys(dateGroups);
 
 
-  if (dates.length === 0) {
+  if (
+    dates.length === 0
+  ) {
 
     container.innerHTML = `
       <div style="
@@ -1291,19 +1620,22 @@ async function loadAdminOrders() {
       dateGroups[date];
 
 
-    /* SAAT GRUPLARI */
-
     const slotGroups = {};
 
 
     dayOrders.forEach(order => {
 
       const slot =
-        order.delivery_slot || "Saat yok";
+        order.delivery_slot ||
+        "Saat yok";
 
 
-      if (!slotGroups[slot]) {
+      if (
+        !slotGroups[slot]
+      ) {
+
         slotGroups[slot] = [];
+
       }
 
 
@@ -1342,7 +1674,9 @@ async function loadAdminOrders() {
     `;
 
 
-    Object.keys(slotGroups).forEach(slot => {
+    Object.keys(
+      slotGroups
+    ).forEach(slot => {
 
       const slotOrders =
         slotGroups[slot];
@@ -1355,7 +1689,10 @@ async function loadAdminOrders() {
       slotOrders.forEach(order => {
 
         slotQuantity +=
-          Number(order.quantity || 0);
+          Number(
+            order.quantity || 0
+          );
+
 
         slotTotal +=
           Number(
@@ -1394,7 +1731,7 @@ async function loadAdminOrders() {
               font-size:12px;
             ">
               ${slotOrders.length} sipariş
-              · ${slotQuantity} adet
+              · ${slotQuantity} ürün
             </span>
 
           </div>
@@ -1419,52 +1756,31 @@ async function loadAdminOrders() {
                   border-bottom:1px solid #ccc;
                 ">
 
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
+                  <th style="padding:7px;text-align:left;">
                     Müşteri
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
+                  <th style="padding:7px;text-align:left;">
                     Telefon
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
+                  <th style="padding:7px;text-align:left;">
                     Mahalle
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
+                  <th style="padding:7px;text-align:left;">
                     Adres
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:left;
-                  ">
+                  <th style="padding:7px;text-align:left;">
                     Ürün
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:center;
-                  ">
+                  <th style="padding:7px;text-align:center;">
                     Adet
                   </th>
 
-                  <th style="
-                    padding:7px;
-                    text-align:right;
-                  ">
+                  <th style="padding:7px;text-align:right;">
                     Tutar
                   </th>
 
@@ -1473,7 +1789,6 @@ async function loadAdminOrders() {
               </thead>
 
               <tbody>
-
       `;
 
 
@@ -1495,6 +1810,7 @@ async function loadAdminOrders() {
               )}
             </td>
 
+
             <td style="
               padding:8px 7px;
               vertical-align:top;
@@ -1505,6 +1821,7 @@ async function loadAdminOrders() {
               )}
             </td>
 
+
             <td style="
               padding:8px 7px;
               vertical-align:top;
@@ -1513,6 +1830,7 @@ async function loadAdminOrders() {
                 order.neighborhood || "-"
               )}
             </td>
+
 
             <td style="
               padding:8px 7px;
@@ -1524,15 +1842,16 @@ async function loadAdminOrders() {
               )}
             </td>
 
+
             <td style="
               padding:8px 7px;
               vertical-align:top;
-              white-space:nowrap;
             ">
               ${escapeHtml(
                 order.product_name || "-"
               )}
             </td>
+
 
             <td style="
               padding:8px 7px;
@@ -1544,6 +1863,7 @@ async function loadAdminOrders() {
                 order.quantity || 0
               )}
             </td>
+
 
             <td style="
               padding:8px 7px;
@@ -1571,6 +1891,7 @@ async function loadAdminOrders() {
 
               </tbody>
 
+
               <tfoot>
 
                 <tr style="
@@ -1589,12 +1910,14 @@ async function loadAdminOrders() {
                     Saat Toplamı:
                   </td>
 
+
                   <td style="
                     padding:8px 7px;
                     text-align:center;
                   ">
                     ${slotQuantity}
                   </td>
+
 
                   <td style="
                     padding:8px 7px;
@@ -1628,10 +1951,12 @@ async function loadAdminOrders() {
 
 
 /* =========================
-   TARİH GÖRÜNÜMÜ
+   TARİH
 ========================= */
 
-function formatDateTurkish(dateString) {
+function formatDateTurkish(
+  dateString
+) {
 
   if (!dateString) {
     return "Tarih yok";
@@ -1642,7 +1967,9 @@ function formatDateTurkish(dateString) {
     dateString.split("-");
 
 
-  if (parts.length !== 3) {
+  if (
+    parts.length !== 3
+  ) {
     return dateString;
   }
 
@@ -1650,8 +1977,10 @@ function formatDateTurkish(dateString) {
   const year =
     parts[0];
 
+
   const month =
     parts[1];
+
 
   const day =
     parts[2];
@@ -1690,7 +2019,9 @@ function formatDateTurkish(dateString) {
    DURUM METNİ
 ========================= */
 
-function getStatusText(status) {
+function getStatusText(
+  status
+) {
 
   const statuses = {
     new: "Yeni Sipariş",
@@ -1700,7 +2031,12 @@ function getStatusText(status) {
     cancelled: "İptal"
   };
 
-  return statuses[status] || status || "-";
+
+  return (
+    statuses[status] ||
+    status ||
+    "-"
+  );
 }
 
 
