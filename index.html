@@ -1261,157 +1261,84 @@ async function loadAdminOrders() {
   }
 
 
-  filteredOrders.forEach(order => {
+  /* =========================
+     SADE SİPARİŞ LİSTESİ
+  ========================= */
+
+  filteredOrders.forEach((order, index) => {
 
     html += `
 
       <div style="
         background:white;
-        padding:15px;
+        padding:18px;
         border-radius:12px;
         margin-top:12px;
         box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        border-left:4px solid #222;
       ">
 
         <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:10px;
+          font-size:14px;
+          color:#777;
+          margin-bottom:12px;
         ">
-
-          <strong style="font-size:18px;">
-            ${order.customer_name || "Müşteri"}
-          </strong>
-
-          <span style="
-            font-weight:bold;
-          ">
-            ${order.total_amount || order.total} TL
-          </span>
-
+          Sipariş #${index + 1}
         </div>
 
-        <p>
-          📞 ${order.phone || "-"}
-        </p>
-
-        <p>
-          🥗 ${order.product_name}
-          × ${order.quantity}
-        </p>
-
-        <p>
-          📅 ${order.delivery_date}
-        </p>
-
-        <p>
-          ⏰ <strong>
-            ${order.delivery_slot}
-          </strong>
-        </p>
-
-        <p>
-          📍 ${order.neighborhood || "-"}
+        <p style="
+          margin:8px 0;
+        ">
+          <strong>Müşteri Adı:</strong><br>
+          ${order.customer_name || "-"}
         </p>
 
         <p style="
-          background:#f4f4f4;
-          padding:10px;
-          border-radius:8px;
+          margin:8px 0;
         ">
+          <strong>Adres:</strong><br>
           ${order.address || "-"}
         </p>
 
-        <label>
-          <strong>Durum</strong>
-        </label>
+        <p style="
+          margin:8px 0;
+        ">
+          <strong>Telefon:</strong><br>
+          ${order.phone || "-"}
+        </p>
 
-        <select
-          style="margin-top:8px;"
-          onchange="updateOrderStatus(
-            '${order.id}',
-            this.value
-          )"
-        >
+        <p style="
+          margin:8px 0;
+        ">
+          <strong>Ürün:</strong><br>
+          ${order.product_name || "-"}
+        </p>
 
-          <option
-            value="new"
-            ${order.status === "new" ? "selected" : ""}
-          >
-            Yeni Sipariş
-          </option>
+        <p style="
+          margin:8px 0;
+        ">
+          <strong>Adet:</strong><br>
+          ${order.quantity || 0}
+        </p>
 
-          <option
-            value="preparing"
-            ${order.status === "preparing" ? "selected" : ""}
-          >
-            Hazırlanıyor
-          </option>
-
-          <option
-            value="ready"
-            ${order.status === "ready" ? "selected" : ""}
-          >
-            Hazır
-          </option>
-
-          <option
-            value="delivered"
-            ${order.status === "delivered" ? "selected" : ""}
-          >
-            Teslim Edildi
-          </option>
-
-          <option
-            value="cancelled"
-            ${order.status === "cancelled" ? "selected" : ""}
-          >
-            İptal
-          </option>
-
-        </select>
+        <p style="
+          margin:12px 0 0 0;
+          padding-top:12px;
+          border-top:1px solid #eee;
+          font-size:18px;
+        ">
+          <strong>Sipariş Ücreti:</strong><br>
+          ${order.total_amount || order.total || 0} TL
+        </p>
 
       </div>
+
     `;
   });
 
 
   container.innerHTML =
     html;
-}
-
-
-/* =========================
-   SİPARİŞ DURUMU DEĞİŞTİR
-========================= */
-
-async function updateOrderStatus(
-  orderId,
-  newStatus
-) {
-
-  const {
-    error
-  } = await supabaseClient
-    .from("orders")
-    .update({
-      status: newStatus
-    })
-    .eq("id", orderId);
-
-
-  if (error) {
-
-    alert(
-      "Durum güncellenemedi: " +
-      error.message
-    );
-
-    return;
-  }
-
-  await loadAdminOrders();
 }
 
 
