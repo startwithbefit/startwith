@@ -221,7 +221,34 @@ async function login() {
     return;
   }
 
-  message.innerText = "Giriş başarılı!";
+  message.innerText = "Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...";
+
+setTimeout(() => {
+  showHome();
+}, 1000);;
+function showHome() {
+  document.getElementById("home").innerHTML = `
+    <h2>Hoş geldin!</h2>
+    <p>Startwith'e hoş geldin. 🥗</p>
+
+    <button onclick="alert('Menü yakında hazır olacak.')">
+      Kahvaltı Menüsü
+    </button>
+
+    <button class="secondary" onclick="alert('Siparişleriniz burada görünecek.')">
+      Siparişlerim
+    </button>
+
+    <button class="back" onclick="logout()">
+      Çıkış Yap
+    </button>
+  `;
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  location.reload();
+}  
 }
 
 </script>
