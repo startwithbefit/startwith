@@ -116,8 +116,7 @@
   <div class="subtitle">Güne iyi başla. Sağlıklı kahvaltın kapında.</div>
 
   <div id="home">
-    <button onclick="showRegister()">Üye Ol</button>
-    <button class="secondary" onclick="showLogin()">Giriş Yap</button>
+    <button onclick="showLogin()">Giriş Yap</button>
   </div>
 
   <div id="registerForm" class="form">
@@ -152,6 +151,7 @@
     <input id="loginPassword" type="password" placeholder="Şifre">
 
     <button onclick="login()">Giriş Yap</button>
+    <button class="secondary" onclick="showRegister()">Üye Ol</button>
     <button class="back" onclick="goHome()">Geri</button>
 
     <p id="loginMessage"></p>
@@ -1383,14 +1383,14 @@ async function loadSlotAvailability() {
     const used = counts[slot] || 0;
     const remaining = Math.max(0, 3 - used);
     const label = used >= 3
-      ? `${slot.replace("-", " - ")} — DOLU · 3/3 sipariş`
-      : `${slot.replace("-", " - ")} — ${used}/3 sipariş · ${remaining} yer kaldı`;
+      ? `${slot.replace("-", " - ")} — DOLU`
+      : `${slot.replace("-", " - ")} — ${remaining} kontenjan kaldı`;
     options += `<option value="${slot}" ${used >= 3 ? "disabled" : ""}>${label}</option>`;
   });
 
   select.innerHTML = options;
   select.disabled = false;
-  info.innerHTML = `Seçtiğiniz tarihin anlık kapasitesi gösteriliyor. <strong>Her yarım saatte maksimum 3 sipariş</strong> alıyoruz. Dolu saatler seçilemez.`;
+  info.innerHTML = `Seçtiğiniz tarih için <strong>kalan kontenjan</strong> gösteriliyor. Dolu saatler seçilemez.`;
 }
 
 /* =====================================================
