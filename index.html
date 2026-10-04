@@ -147,7 +147,7 @@ let cart = [];
 
 
 /* =========================
-   ANA SAYFA / GİRİŞ
+   ANA SAYFA
 ========================= */
 
 function showRegister() {
@@ -253,7 +253,7 @@ async function login() {
 
 
 /* =========================
-   GİRİŞ YAPILMIŞ ANA SAYFA
+   ANA SAYFA
 ========================= */
 
 function showHome() {
@@ -339,17 +339,13 @@ function addToCart() {
   );
 
   if (existingItem) {
-
     existingItem.quantity++;
-
   } else {
-
     cart.push({
       name: "Startwith Fit Kahvaltı",
       price: 249,
       quantity: 1
     });
-
   }
 
   showCart();
@@ -449,41 +445,33 @@ function showCart() {
 
 
 /* =========================
-   ADET ARTIR / AZALT
+   ADET
 ========================= */
 
 function increaseQuantity(index) {
-
   cart[index].quantity++;
-
   showCart();
 }
 
 function decreaseQuantity(index) {
 
   if (cart[index].quantity > 1) {
-
     cart[index].quantity--;
-
   } else {
-
     cart.splice(index, 1);
-
   }
 
   showCart();
 }
 
 function removeFromCart(index) {
-
   cart.splice(index, 1);
-
   showCart();
 }
 
 
 /* =========================
-   TARİH YARDIMCILARI
+   YARININ TARİHİ
 ========================= */
 
 function getTomorrowDate() {
@@ -512,8 +500,6 @@ function getTomorrowDate() {
 
 function showOrderForm() {
 
-  const tomorrow = getTomorrowDate();
-
   document.getElementById("home").innerHTML = `
 
     <h2>Sipariş Oluştur</h2>
@@ -532,61 +518,20 @@ function showOrderForm() {
         Teslimat saati seçin
       </option>
 
-      <option value="07:00-07:30">
-        07:00 - 07:30
-      </option>
-
-      <option value="07:30-08:00">
-        07:30 - 08:00
-      </option>
-
-      <option value="08:00-08:30">
-        08:00 - 08:30
-      </option>
-
-      <option value="08:30-09:00">
-        08:30 - 09:00
-      </option>
-
-      <option value="09:00-09:30">
-        09:00 - 09:30
-      </option>
-
-      <option value="09:30-10:00">
-        09:30 - 10:00
-      </option>
-
-      <option value="10:00-10:30">
-        10:00 - 10:30
-      </option>
-
-      <option value="10:30-11:00">
-        10:30 - 11:00
-      </option>
-
-      <option value="11:00-11:30">
-        11:00 - 11:30
-      </option>
-
-      <option value="11:30-12:00">
-        11:30 - 12:00
-      </option>
-
-      <option value="12:00-12:30">
-        12:00 - 12:30
-      </option>
-
-      <option value="12:30-13:00">
-        12:30 - 13:00
-      </option>
-
-      <option value="13:00-13:30">
-        13:00 - 13:30
-      </option>
-
-      <option value="13:30-14:00">
-        13:30 - 14:00
-      </option>
+      <option value="07:00-07:30">07:00 - 07:30</option>
+      <option value="07:30-08:00">07:30 - 08:00</option>
+      <option value="08:00-08:30">08:00 - 08:30</option>
+      <option value="08:30-09:00">08:30 - 09:00</option>
+      <option value="09:00-09:30">09:00 - 09:30</option>
+      <option value="09:30-10:00">09:30 - 10:00</option>
+      <option value="10:00-10:30">10:00 - 10:30</option>
+      <option value="10:30-11:00">10:30 - 11:00</option>
+      <option value="11:00-11:30">11:00 - 11:30</option>
+      <option value="11:30-12:00">11:30 - 12:00</option>
+      <option value="12:00-12:30">12:00 - 12:30</option>
+      <option value="12:30-13:00">12:30 - 13:00</option>
+      <option value="13:00-13:30">13:00 - 13:30</option>
+      <option value="13:30-14:00">13:30 - 14:00</option>
 
     </select>
 
@@ -599,9 +544,7 @@ function showOrderForm() {
 
       <strong>Ödeme</strong>
 
-      <p>
-        Kapıda ödeme
-      </p>
+      <p>Kapıda ödeme</p>
 
     </div>
 
@@ -640,21 +583,31 @@ async function createOrder() {
     return;
   }
 
-  /*
-    18:00'dan sonra ertesi gün siparişi
-    online olarak kabul etmiyoruz.
-  */
+
+  /* Kullanıcının oturumunu al */
+
+  const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+
+  if (userError || !user) {
+
+    message.innerText =
+      "Oturumunuz bulunamadı. Lütfen tekrar giriş yapın.";
+
+    return;
+  }
+
+
+  /* 18:00 sonrası online sipariş kapalı */
 
   const now = new Date();
 
   const currentHour = now.getHours();
 
-  const currentMinute = now.getMinutes();
-
-  if (
-    currentHour > 18 ||
-    (currentHour === 18 && currentMinute >= 0)
-  ) {
+  if (currentHour >= 18) {
 
     message.innerText =
       "Bu gün için online sipariş süresi dolmuştur. " +
@@ -665,27 +618,26 @@ async function createOrder() {
   }
 
 
+  const deliveryDate = getTomorrowDate();
+
+
   message.innerText =
     "Teslimat saati kontrol ediliyor...";
 
 
-  const deliveryDate = getTomorrowDate();
+  /* Aynı saat için mevcut sipariş sayısı */
 
-
-  /*
-    Aynı gün ve aynı saat için mevcut
-    siparişleri kontrol ediyoruz.
-  */
-
-  const { count, error: countError } =
-    await supabaseClient
-      .from("orders")
-      .select("*", {
-        count: "exact",
-        head: true
-      })
-      .eq("delivery_date", deliveryDate)
-      .eq("delivery_slot", slot);
+  const {
+    count,
+    error: countError
+  } = await supabaseClient
+    .from("orders")
+    .select("*", {
+      count: "exact",
+      head: true
+    })
+    .eq("delivery_date", deliveryDate)
+    .eq("delivery_slot", slot);
 
 
   if (countError) {
@@ -698,9 +650,7 @@ async function createOrder() {
   }
 
 
-  /*
-    Her yarım saat için maksimum 3 sipariş.
-  */
+  /* Maksimum 3 sipariş */
 
   if (count >= 3) {
 
@@ -715,18 +665,14 @@ async function createOrder() {
   }
 
 
-  /*
-    Sepet toplamını hesapla.
-  */
+  /* Sepet toplamı */
 
   let total = 0;
-
   let quantity = 0;
 
   cart.forEach(item => {
 
     total += item.price * item.quantity;
-
     quantity += item.quantity;
 
   });
@@ -746,7 +692,8 @@ async function createOrder() {
 
 
   /*
-    Siparişi Supabase'e kaydet.
+    BURASI ÖNEMLİ:
+    user_id artık açıkça gönderiliyor.
   */
 
   const { data, error } =
@@ -754,6 +701,7 @@ async function createOrder() {
       .from("orders")
       .insert([
         {
+          user_id: user.id,
           product_name: cart[0].name,
           quantity: quantity,
           total: total,
@@ -774,10 +722,6 @@ async function createOrder() {
     return;
   }
 
-
-  /*
-    Başarılı sipariş.
-  */
 
   cart = [];
 
@@ -840,11 +784,32 @@ async function showOrders() {
 
 
   const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+
+  if (userError || !user) {
+
+    document.getElementById("home").innerHTML = `
+      <h2>Siparişlerim</h2>
+      <p>Lütfen tekrar giriş yapın.</p>
+      <button class="back" onclick="showHome()">
+        Ana Sayfa
+      </button>
+    `;
+
+    return;
+  }
+
+
+  const {
     data: orders,
     error
   } = await supabaseClient
     .from("orders")
     .select("*")
+    .eq("user_id", user.id)
     .order("created_at", {
       ascending: false
     });
@@ -894,13 +859,9 @@ async function showOrders() {
             ${order.product_name}
           </strong>
 
-          <p>
-            Adet: ${order.quantity}
-          </p>
+          <p>Adet: ${order.quantity}</p>
 
-          <p>
-            Toplam: ${order.total} TL
-          </p>
+          <p>Toplam: ${order.total} TL</p>
 
           <p>
             Teslimat:
