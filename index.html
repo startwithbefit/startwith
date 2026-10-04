@@ -1591,31 +1591,31 @@ function showOrderForm() {
 
   document.getElementById("home").innerHTML = `
     <h2>Sipariş Oluştur</h2>
-    <div style="background:#fff7d6;border:1px solid #f1d47a;padding:14px;border-radius:14px;margin:12px 0 18px;line-height:1.55;color:#4d442d;">
+    <div style="background:#fff7d6;border:1px solid #f1d47a;padding:9px 11px;border-radius:11px;margin:8px 0 14px;line-height:1.4;color:#5b5239;font-size:12px;">
       <strong>Önemli bilgi</strong><br>
       Bugün için online sipariş alamıyoruz. Ertesi gün için vereceğiniz siparişlerde son sipariş saatimiz <strong>18:00</strong>'dır.
       ${afterCutoff ? `<br><br><strong>Bugün saat 18:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
       <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
     </div>
 
-    <label>Teslimat Adresi</label>
+    <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Adresi</label>
     <select id="deliveryAddress">
       <option value="">Adresler yükleniyor...</option>
     </select>
     <div id="deliveryAddressInfo" style="margin-top:8px;font-size:13px;color:#6f756c;line-height:1.5;"></div>
 
-    <label>Teslimat Tarihi</label>
+    <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Tarihi</label>
     <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability()">
 
-    <label>Teslimat Saati</label>
+    <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Saati</label>
     <select id="deliverySlot">
       <option value="">Saatler yükleniyor...</option>
     </select>
     <div id="slotAvailabilityInfo" style="margin-top:10px;font-size:13px;color:#6f756c;line-height:1.5;">
-      Her yarım saatlik zaman diliminde en fazla 3 sipariş alınır.
+      Seçtiğiniz tarih için uygun teslimat saatleri gösterilecektir.
     </div>
 
-    <label for="orderNote">Sipariş Notu <span style="font-weight:400;color:#6f756c;">(isteğe bağlı)</span></label>
+    <label for="orderNote" style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Sipariş Notu <span style="font-size:13px;font-weight:500;color:#6f756c;">(isteğe bağlı)</span></label>
     <textarea id="orderNote" maxlength="500" placeholder="Örn: Zili çalmayın, peyniri ayrı paketleyebilir misiniz?" style="width:100%;min-height:90px;box-sizing:border-box;border:1px solid #d8d2c5;border-radius:12px;padding:12px;font:inherit;resize:vertical;background:#fffdf8;"></textarea>
 
     <div style="background:white;padding:12px;border-radius:8px;margin-top:15px;">
