@@ -222,8 +222,8 @@ async function login() {
   }
 
   message.innerText = "Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...";
-  showHome();
-alert("SHOWHOME ÇALIŞTI");
+    showHome();
+
 function showHome() {
   document.getElementById("home").innerHTML = `
     <h2>Hoş geldin!</h2>
@@ -241,6 +241,8 @@ function showHome() {
       Çıkış Yap
     </button>
   `;
+}
+
 }
 
 async function logout() {
