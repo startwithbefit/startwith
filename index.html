@@ -221,10 +221,15 @@ async function login() {
     return;
   }
 
-  message.innerText = "Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...";
-    showHome();
+  showHome();
+}
 
 function showHome() {
+
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("home").style.display = "block";
+
   document.getElementById("home").innerHTML = `
     <h2>Hoş geldin!</h2>
     <p>Startwith'e hoş geldin. 🥗</p>
@@ -243,12 +248,9 @@ function showHome() {
   `;
 }
 
-}
-
 async function logout() {
   await supabaseClient.auth.signOut();
   location.reload();
-}  
 }
 
 </script>
