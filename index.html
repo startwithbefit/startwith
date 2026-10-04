@@ -175,12 +175,12 @@ function goHome() {
 
 async function register() {
 
-  const firstName = document.getElementById("firstName").value;
-  const lastName = document.getElementById("lastName").value;
-  const phone = document.getElementById("phone").value;
-  const email = document.getElementById("email").value;
-  const neighborhood = document.getElementById("neighborhood").value;
-  const address = document.getElementById("address").value;
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const neighborhood = document.getElementById("neighborhood").value.trim();
+  const address = document.getElementById("address").value.trim();
   const password = document.getElementById("password").value;
 
   const message = document.getElementById("registerMessage");
@@ -230,7 +230,7 @@ async function register() {
 
 async function login() {
 
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   const message = document.getElementById("loginMessage");
@@ -256,7 +256,14 @@ async function login() {
    ANA SAYFA
 ========================= */
 
-function showHome() {
+async function showHome() {
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+  const isAdmin =
+    user?.user_metadata?.role === "admin";
 
   document.getElementById("registerForm").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
@@ -267,13 +274,37 @@ function showHome() {
 
     <p>Startwith'e hoş geldin. 🥗</p>
 
-    <button onclick="showMenu()">Kahvaltı Menüsü</button>
+    <button onclick="showMenu()">
+      Kahvaltı Menüsü
+    </button>
 
-    <button class="secondary" onclick="showCart()">Sepetim</button>
+    <button class="secondary" onclick="showCart()">
+      Sepetim
+    </button>
 
-    <button class="secondary" onclick="showOrders()">Siparişlerim</button>
+    <button class="secondary" onclick="showOrders()">
+      Siparişlerim
+    </button>
 
-    <button class="back" onclick="logout()">Çıkış Yap</button>
+    ${
+      isAdmin
+        ? `
+          <button
+            onclick="showAdminPanel()"
+            style="
+              background:#222;
+              color:white;
+            "
+          >
+            👨‍💼 Yönetici Paneli
+          </button>
+        `
+        : ""
+    }
+
+    <button class="back" onclick="logout()">
+      Çıkış Yap
+    </button>
   `;
 }
 
@@ -303,7 +334,9 @@ function showMenu() {
 
       <strong>249 TL</strong>
 
-      <button onclick="addToCart()">Sepete Ekle</button>
+      <button onclick="addToCart()">
+        Sepete Ekle
+      </button>
 
     </div>
 
@@ -468,7 +501,9 @@ function getTomorrowDate() {
 
   const tomorrow = new Date();
 
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setDate(
+    tomorrow.getDate() + 1
+  );
 
   const year = tomorrow.getFullYear();
 
@@ -502,7 +537,9 @@ function showOrderForm() {
 
     <select id="deliverySlot">
 
-      <option value="">Teslimat saati seçin</option>
+      <option value="">
+        Teslimat saati seçin
+      </option>
 
       <option value="07:00-07:30">07:00 - 07:30</option>
       <option value="07:30-08:00">07:30 - 08:00</option>
@@ -529,6 +566,7 @@ function showOrderForm() {
     ">
 
       <strong>Ödeme</strong>
+
       <p>Kapıda ödeme</p>
 
     </div>
@@ -541,9 +579,10 @@ function showOrderForm() {
       Sepete Dön
     </button>
 
-    <p id="orderMessage"
-       style="text-align:center; margin-top:15px;">
-    </p>
+    <p
+      id="orderMessage"
+      style="text-align:center; margin-top:15px;"
+    ></p>
   `;
 }
 
@@ -561,20 +600,17 @@ async function createOrder() {
     document.getElementById("orderMessage");
 
   if (!slot) {
-
     message.innerText =
       "Lütfen teslimat saati seçin.";
-
     return;
   }
 
-
-  /* Kullanıcı */
 
   const {
     data: { user },
     error: userError
   } = await supabaseClient.auth.getUser();
+
 
   if (userError || !user) {
 
@@ -585,13 +621,22 @@ async function createOrder() {
   }
 
 
-  /* Kullanıcı bilgileri */
-
   const neighborhood =
     user.user_metadata?.neighborhood;
 
   const address =
     user.user_metadata?.address;
+
+
+  const customerName =
+    (
+      (user.user_metadata?.first_name || "") +
+      " " +
+      (user.user_metadata?.last_name || "")
+    ).trim();
+
+  const phone =
+    user.user_metadata?.phone || "";
 
 
   if (!neighborhood || !address) {
@@ -618,29 +663,32 @@ async function createOrder() {
   }
 
 
-  const deliveryDate = getTomorrowDate();
+  const deliveryDate =
+    getTomorrowDate();
 
 
-  /* Saat */
+  const slotParts =
+    slot.split("-");
 
-  const slotParts = slot.split("-");
+  const startTime =
+    slotParts[0] + ":00";
 
-  const startTime = slotParts[0] + ":00";
-  const endTime = slotParts[1] + ":00";
+  const endTime =
+    slotParts[1] + ":00";
 
 
   message.innerText =
     "Teslimat saati kontrol ediliyor...";
 
 
-  /* Teslimat slotu */
-
   const {
     data: deliverySlot,
     error: slotError
   } = await supabaseClient
     .from("delivery_slots")
-    .select("id, slot_date, start_time, end_time, capacity")
+    .select(
+      "id, slot_date, start_time, end_time, capacity"
+    )
     .eq("slot_date", deliveryDate)
     .eq("start_time", startTime)
     .eq("end_time", endTime)
@@ -660,25 +708,25 @@ async function createOrder() {
   if (!deliverySlot) {
 
     message.innerText =
-      "Seçtiğiniz teslimat saati için uygun bir teslimat kaydı bulunamadı. " +
-      "Lütfen başka bir saat seçin.";
+      "Seçtiğiniz teslimat saati için uygun bir teslimat kaydı bulunamadı.";
 
     return;
   }
 
 
-  /* Kapasite */
+  /* GERÇEK KAPASİTE KONTROLÜ */
 
   const {
-    count: orderCount,
+    data: orderCount,
     error: countError
   } = await supabaseClient
-    .from("orders")
-    .select("*", {
-      count: "exact",
-      head: true
-    })
-    .eq("delivery_slot_id", deliverySlot.id);
+    .rpc(
+      "get_slot_order_count",
+      {
+        p_delivery_slot_id:
+          deliverySlot.id
+      }
+    );
 
 
   if (countError) {
@@ -691,27 +739,32 @@ async function createOrder() {
   }
 
 
-  if (orderCount >= deliverySlot.capacity) {
+  if (
+    orderCount >=
+    deliverySlot.capacity
+  ) {
 
     message.innerText =
       "Bu teslimat saati şu anda dolu. " +
-      "Lütfen başka bir teslimat saati seçin. " +
-      "Eğer bu saat sizin için uygunsa, bizimle iletişime geçin; " +
-      "size yardımcı olmaya çalışacağız.";
+      "Lütfen başka bir teslimat saati seçin.";
 
     return;
   }
 
 
-  /* Sepet */
+  /* SEPET */
 
   let total = 0;
   let quantity = 0;
 
   cart.forEach(item => {
 
-    total += item.price * item.quantity;
-    quantity += item.quantity;
+    total +=
+      item.price *
+      item.quantity;
+
+    quantity +=
+      item.quantity;
 
   });
 
@@ -729,28 +782,29 @@ async function createOrder() {
     "Sipariş oluşturuluyor...";
 
 
-  /* =========================
-     SİPARİŞİ KAYDET
-  ========================= */
+  /* SİPARİŞİ KAYDET */
 
-  const { error } =
-    await supabaseClient
-      .from("orders")
-      .insert([
-        {
-          user_id: user.id,
-          product_name: cart[0].name,
-          quantity: quantity,
-          total: total,
-          total_amount: total,
-          delivery_date: deliveryDate,
-          delivery_slot: slot,
-          delivery_slot_id: deliverySlot.id,
-          neighborhood: neighborhood,
-          address: address,
-          status: "new"
-        }
-      ]);
+  const {
+    error
+  } = await supabaseClient
+    .from("orders")
+    .insert([
+      {
+        user_id: user.id,
+        product_name: cart[0].name,
+        quantity: quantity,
+        total: total,
+        total_amount: total,
+        delivery_date: deliveryDate,
+        delivery_slot: slot,
+        delivery_slot_id: deliverySlot.id,
+        neighborhood: neighborhood,
+        address: address,
+        customer_name: customerName,
+        phone: phone,
+        status: "new"
+      }
+    ]);
 
 
   if (error) {
@@ -762,8 +816,6 @@ async function createOrder() {
     return;
   }
 
-
-  /* Başarılı */
 
   cart = [];
 
@@ -845,9 +897,13 @@ async function showOrders() {
 
     document.getElementById("home").innerHTML = `
       <h2>Siparişlerim</h2>
+
       <p>Lütfen tekrar giriş yapın.</p>
 
-      <button class="back" onclick="showHome()">
+      <button
+        class="back"
+        onclick="showHome()"
+      >
         Ana Sayfa
       </button>
     `;
@@ -878,7 +934,10 @@ async function showOrders() {
         ${error.message}
       </p>
 
-      <button class="back" onclick="showHome()">
+      <button
+        class="back"
+        onclick="showHome()"
+      >
         Ana Sayfa
       </button>
     `;
@@ -912,9 +971,14 @@ async function showOrders() {
             ${order.product_name}
           </strong>
 
-          <p>Adet: ${order.quantity}</p>
+          <p>
+            Adet: ${order.quantity}
+          </p>
 
-          <p>Toplam: ${order.total_amount || order.total} TL</p>
+          <p>
+            Toplam:
+            ${order.total_amount || order.total} TL
+          </p>
 
           <p>
             Teslimat:
@@ -938,13 +1002,11 @@ async function showOrders() {
 
           <p>
             Durum:
-            ${order.status}
+            ${getStatusText(order.status)}
           </p>
 
         </div>
-
       `;
-
     });
   }
 
@@ -955,11 +1017,419 @@ async function showOrders() {
 
     ${orderList}
 
-    <button class="back" onclick="showHome()">
+    <button
+      class="back"
+      onclick="showHome()"
+    >
       Ana Sayfa
     </button>
 
   `;
+}
+
+
+/* =========================
+   YÖNETİCİ PANELİ
+========================= */
+
+async function showAdminPanel() {
+
+  const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+
+  if (
+    userError ||
+    !user ||
+    user.user_metadata?.role !== "admin"
+  ) {
+
+    document.getElementById("home").innerHTML = `
+      <h2>Yönetici Paneli</h2>
+
+      <p>
+        Bu alana erişim yetkiniz yok.
+      </p>
+
+      <button
+        class="back"
+        onclick="showHome()"
+      >
+        Ana Sayfa
+      </button>
+    `;
+
+    return;
+  }
+
+
+  document.getElementById("home").innerHTML = `
+    <h2>👨‍💼 Yönetici Paneli</h2>
+
+    <div style="
+      background:white;
+      padding:15px;
+      border-radius:10px;
+      margin-top:15px;
+    ">
+
+      <label>
+        Siparişleri göster:
+      </label>
+
+      <select id="adminDateFilter">
+        <option value="tomorrow">
+          Yarın
+        </option>
+
+        <option value="all">
+          Tüm Siparişler
+        </option>
+      </select>
+
+    </div>
+
+    <div id="adminOrders">
+      Siparişler yükleniyor...
+    </div>
+
+    <button
+      class="back"
+      onclick="showHome()"
+    >
+      Ana Sayfa
+    </button>
+  `;
+
+
+  document
+    .getElementById("adminDateFilter")
+    .addEventListener(
+      "change",
+      loadAdminOrders
+    );
+
+
+  await loadAdminOrders();
+}
+
+
+/* =========================
+   YÖNETİCİ SİPARİŞLERİNİ YÜKLE
+========================= */
+
+async function loadAdminOrders() {
+
+  const container =
+    document.getElementById("adminOrders");
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML =
+    "<p>Siparişler yükleniyor...</p>";
+
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+
+  if (
+    !user ||
+    user.user_metadata?.role !== "admin"
+  ) {
+
+    container.innerHTML =
+      "<p>Yetkiniz bulunmuyor.</p>";
+
+    return;
+  }
+
+
+  const {
+    data: orders,
+    error
+  } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("delivery_date", {
+      ascending: true
+    })
+    .order("delivery_slot", {
+      ascending: true
+    })
+    .order("created_at", {
+      ascending: true
+    });
+
+
+  if (error) {
+
+    container.innerHTML = `
+      <p>
+        Siparişler yüklenemedi:
+        ${error.message}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const filter =
+    document.getElementById(
+      "adminDateFilter"
+    )?.value || "tomorrow";
+
+
+  let filteredOrders = orders || [];
+
+
+  if (filter === "tomorrow") {
+
+    const tomorrow =
+      getTomorrowDate();
+
+    filteredOrders =
+      filteredOrders.filter(
+        order =>
+          order.delivery_date === tomorrow
+      );
+  }
+
+
+  let totalOrders =
+    filteredOrders.length;
+
+  let totalBreakfasts = 0;
+
+  filteredOrders.forEach(order => {
+
+    totalBreakfasts +=
+      Number(order.quantity || 0);
+
+  });
+
+
+  let html = `
+
+    <div style="
+      background:#222;
+      color:white;
+      padding:15px;
+      border-radius:10px;
+      margin-top:15px;
+    ">
+
+      <strong>
+        ${totalOrders} sipariş
+      </strong>
+
+      <br>
+
+      <span>
+        ${totalBreakfasts} kahvaltı
+      </span>
+
+    </div>
+  `;
+
+
+  if (
+    filteredOrders.length === 0
+  ) {
+
+    html += `
+      <div style="
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        margin-top:15px;
+        text-align:center;
+      ">
+        Henüz sipariş yok.
+      </div>
+    `;
+
+    container.innerHTML = html;
+
+    return;
+  }
+
+
+  filteredOrders.forEach(order => {
+
+    html += `
+
+      <div style="
+        background:white;
+        padding:15px;
+        border-radius:12px;
+        margin-top:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:10px;
+        ">
+
+          <strong style="font-size:18px;">
+            ${order.customer_name || "Müşteri"}
+          </strong>
+
+          <span style="
+            font-weight:bold;
+          ">
+            ${order.total_amount || order.total} TL
+          </span>
+
+        </div>
+
+        <p>
+          📞 ${order.phone || "-"}
+        </p>
+
+        <p>
+          🥗 ${order.product_name}
+          × ${order.quantity}
+        </p>
+
+        <p>
+          📅 ${order.delivery_date}
+        </p>
+
+        <p>
+          ⏰ <strong>
+            ${order.delivery_slot}
+          </strong>
+        </p>
+
+        <p>
+          📍 ${order.neighborhood || "-"}
+        </p>
+
+        <p style="
+          background:#f4f4f4;
+          padding:10px;
+          border-radius:8px;
+        ">
+          ${order.address || "-"}
+        </p>
+
+        <label>
+          <strong>Durum</strong>
+        </label>
+
+        <select
+          style="margin-top:8px;"
+          onchange="updateOrderStatus(
+            '${order.id}',
+            this.value
+          )"
+        >
+
+          <option
+            value="new"
+            ${order.status === "new" ? "selected" : ""}
+          >
+            Yeni Sipariş
+          </option>
+
+          <option
+            value="preparing"
+            ${order.status === "preparing" ? "selected" : ""}
+          >
+            Hazırlanıyor
+          </option>
+
+          <option
+            value="ready"
+            ${order.status === "ready" ? "selected" : ""}
+          >
+            Hazır
+          </option>
+
+          <option
+            value="delivered"
+            ${order.status === "delivered" ? "selected" : ""}
+          >
+            Teslim Edildi
+          </option>
+
+          <option
+            value="cancelled"
+            ${order.status === "cancelled" ? "selected" : ""}
+          >
+            İptal
+          </option>
+
+        </select>
+
+      </div>
+    `;
+  });
+
+
+  container.innerHTML =
+    html;
+}
+
+
+/* =========================
+   SİPARİŞ DURUMU DEĞİŞTİR
+========================= */
+
+async function updateOrderStatus(
+  orderId,
+  newStatus
+) {
+
+  const {
+    error
+  } = await supabaseClient
+    .from("orders")
+    .update({
+      status: newStatus
+    })
+    .eq("id", orderId);
+
+
+  if (error) {
+
+    alert(
+      "Durum güncellenemedi: " +
+      error.message
+    );
+
+    return;
+  }
+
+  await loadAdminOrders();
+}
+
+
+/* =========================
+   DURUM METNİ
+========================= */
+
+function getStatusText(status) {
+
+  const statuses = {
+    new: "Yeni Sipariş",
+    preparing: "Hazırlanıyor",
+    ready: "Hazır",
+    delivered: "Teslim Edildi",
+    cancelled: "İptal"
+  };
+
+  return statuses[status] || status || "-";
 }
 
 
