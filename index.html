@@ -1549,116 +1549,31 @@ async function createOrder() {
     "Teslimat saati kontrol ediliyor...";
 
 
+  // Seçilen tarih için delivery_slots tablosunda önceden kayıt bulunması
+  // zorunlu değil. Kapasiteyi doğrudan o tarih + saat aralığındaki
+  // mevcut siparişlerden kontrol ediyoruz. Böylece ileri tarihler seçilebilir.
   const {
-
-    data: deliverySlot,
-
-    error: slotError
-
-  } =
-
-    await supabaseClient
-
-      .from(
-        "delivery_slots"
-      )
-
-      .select(
-        "id, slot_date, start_time, end_time, capacity"
-      )
-
-      .eq(
-        "slot_date",
-        deliveryDate
-      )
-
-      .eq(
-        "start_time",
-        startTime
-      )
-
-      .eq(
-        "end_time",
-        endTime
-      )
-
-      .maybeSingle();
-
-
-  if (slotError) {
-
-    message.innerText =
-
-      "Teslimat saati kontrolünde hata oluştu: " +
-
-      slotError.message;
-
-
-    return;
-
-  }
-
-
-  if (!deliverySlot) {
-
-    message.innerText =
-      "Seçtiğiniz teslimat saati için uygun bir teslimat kaydı bulunamadı.";
-
-    return;
-
-  }
-
-
-  const {
-
-    data: orderCount,
-
+    count: orderCount,
     error: countError
-
-  } =
-
-    await supabaseClient
-
-      .rpc(
-
-        "get_slot_order_count",
-
-        {
-
-          p_delivery_slot_id:
-            deliverySlot.id
-
-        }
-
-      );
-
+  } = await supabaseClient
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("delivery_date", deliveryDate)
+    .eq("delivery_slot", slot);
 
   if (countError) {
-
     message.innerText =
-
       "Teslimat kapasitesi kontrolünde hata oluştu: " +
-
       countError.message;
-
-
     return;
-
   }
 
+  const slotCapacity = 5;
 
-  if (
-
-    orderCount >=
-    deliverySlot.capacity
-
-  ) {
-
+  if ((orderCount || 0) >= slotCapacity) {
     message.innerText =
       "Bu teslimat saati şu anda dolu. Lütfen başka bir teslimat saati seçin.";
-
     return;
-
   }
 
 
@@ -1738,9 +1653,6 @@ async function createOrder() {
 
           delivery_slot:
             slot,
-
-          delivery_slot_id:
-            deliverySlot.id,
 
           neighborhood:
             neighborhood,
