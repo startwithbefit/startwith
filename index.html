@@ -296,7 +296,7 @@ async function showHome() {
               color:white;
             "
           >
-            👨‍💼 Yönetici Paneli
+            Yönetici Paneli
           </button>
         `
         : ""
@@ -648,8 +648,6 @@ async function createOrder() {
   }
 
 
-  /* 18:00 sonrası online sipariş kapalı */
-
   const now = new Date();
 
   if (now.getHours() >= 18) {
@@ -714,8 +712,6 @@ async function createOrder() {
   }
 
 
-  /* GERÇEK KAPASİTE KONTROLÜ */
-
   const {
     data: orderCount,
     error: countError
@@ -752,8 +748,6 @@ async function createOrder() {
   }
 
 
-  /* SEPET */
-
   let total = 0;
   let quantity = 0;
 
@@ -781,8 +775,6 @@ async function createOrder() {
   message.innerText =
     "Sipariş oluşturuluyor...";
 
-
-  /* SİPARİŞİ KAYDET */
 
   const {
     error
@@ -1066,20 +1058,41 @@ async function showAdminPanel() {
 
 
   document.getElementById("home").innerHTML = `
-    <h2>👨‍💼 Yönetici Paneli</h2>
 
     <div style="
-      background:white;
-      padding:15px;
-      border-radius:10px;
-      margin-top:15px;
+      margin-bottom:15px;
     ">
 
-      <label>
-        Siparişleri göster:
-      </label>
+      <h2 style="
+        margin-bottom:5px;
+      ">
+        Yönetici Paneli
+      </h2>
 
-      <select id="adminDateFilter">
+      <p style="
+        margin-top:0;
+        color:#666;
+        font-size:14px;
+      ">
+        Sipariş hazırlama listesi
+      </p>
+
+    </div>
+
+
+    <div style="
+      margin-bottom:15px;
+    ">
+
+      <select
+        id="adminDateFilter"
+        style="
+          width:100%;
+          padding:10px;
+          font-size:14px;
+        "
+      >
+
         <option value="tomorrow">
           Yarın
         </option>
@@ -1087,13 +1100,16 @@ async function showAdminPanel() {
         <option value="all">
           Tüm Siparişler
         </option>
+
       </select>
 
     </div>
 
+
     <div id="adminOrders">
       Siparişler yükleniyor...
     </div>
+
 
     <button
       class="back"
@@ -1101,6 +1117,7 @@ async function showAdminPanel() {
     >
       Ana Sayfa
     </button>
+
   `;
 
 
@@ -1117,7 +1134,29 @@ async function showAdminPanel() {
 
 
 /* =========================
-   YÖNETİCİ SİPARİŞLERİNİ YÜKLE
+   HTML GÜVENLİK
+========================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "-";
+  }
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================
+   YÖNETİCİ SİPARİŞLERİ
 ========================= */
 
 async function loadAdminOrders() {
@@ -1172,7 +1211,7 @@ async function loadAdminOrders() {
     container.innerHTML = `
       <p>
         Siparişler yüklenemedi:
-        ${error.message}
+        ${escapeHtml(error.message)}
       </p>
     `;
 
@@ -1186,7 +1225,8 @@ async function loadAdminOrders() {
     )?.value || "tomorrow";
 
 
-  let filteredOrders = orders || [];
+  let filteredOrders =
+    orders || [];
 
 
   if (filter === "tomorrow") {
@@ -1202,143 +1242,447 @@ async function loadAdminOrders() {
   }
 
 
-  let totalOrders =
-    filteredOrders.length;
+  /* TARİH GRUPLARI */
 
-  let totalBreakfasts = 0;
+  const dateGroups = {};
+
 
   filteredOrders.forEach(order => {
 
-    totalBreakfasts +=
-      Number(order.quantity || 0);
+    const date =
+      order.delivery_date || "Tarih yok";
+
+    if (!dateGroups[date]) {
+      dateGroups[date] = [];
+    }
+
+    dateGroups[date].push(order);
 
   });
 
 
-  let html = `
-
-    <div style="
-      background:#222;
-      color:white;
-      padding:15px;
-      border-radius:10px;
-      margin-top:15px;
-    ">
-
-      <strong>
-        ${totalOrders} sipariş
-      </strong>
-
-      <br>
-
-      <span>
-        ${totalBreakfasts} kahvaltı
-      </span>
-
-    </div>
-  `;
+  let html = "";
 
 
-  if (
-    filteredOrders.length === 0
-  ) {
+  const dates =
+    Object.keys(dateGroups);
 
-    html += `
+
+  if (dates.length === 0) {
+
+    container.innerHTML = `
       <div style="
         background:white;
         padding:20px;
-        border-radius:10px;
-        margin-top:15px;
         text-align:center;
+        border-radius:8px;
       ">
         Henüz sipariş yok.
       </div>
     `;
 
-    container.innerHTML = html;
-
     return;
   }
 
 
-  /* =========================
-     SADE SİPARİŞ LİSTESİ
-  ========================= */
+  dates.forEach(date => {
 
-  filteredOrders.forEach((order, index) => {
+    const dayOrders =
+      dateGroups[date];
+
+
+    /* SAAT GRUPLARI */
+
+    const slotGroups = {};
+
+
+    dayOrders.forEach(order => {
+
+      const slot =
+        order.delivery_slot || "Saat yok";
+
+
+      if (!slotGroups[slot]) {
+        slotGroups[slot] = [];
+      }
+
+
+      slotGroups[slot].push(order);
+
+    });
+
 
     html += `
 
       <div style="
-        background:white;
-        padding:18px;
-        border-radius:12px;
-        margin-top:12px;
-        box-shadow:0 2px 8px rgba(0,0,0,0.08);
-        border-left:4px solid #222;
+        margin-top:20px;
+        margin-bottom:8px;
+        padding-bottom:6px;
+        border-bottom:2px solid #222;
       ">
 
-        <div style="
-          font-size:14px;
-          color:#777;
-          margin-bottom:12px;
-        ">
-          Sipariş #${index + 1}
-        </div>
-
-        <p style="
-          margin:8px 0;
-        ">
-          <strong>Müşteri Adı:</strong><br>
-          ${order.customer_name || "-"}
-        </p>
-
-        <p style="
-          margin:8px 0;
-        ">
-          <strong>Adres:</strong><br>
-          ${order.address || "-"}
-        </p>
-
-        <p style="
-          margin:8px 0;
-        ">
-          <strong>Telefon:</strong><br>
-          ${order.phone || "-"}
-        </p>
-
-        <p style="
-          margin:8px 0;
-        ">
-          <strong>Ürün:</strong><br>
-          ${order.product_name || "-"}
-        </p>
-
-        <p style="
-          margin:8px 0;
-        ">
-          <strong>Adet:</strong><br>
-          ${order.quantity || 0}
-        </p>
-
-        <p style="
-          margin:12px 0 0 0;
-          padding-top:12px;
-          border-top:1px solid #eee;
+        <strong style="
           font-size:18px;
         ">
-          <strong>Sipariş Ücreti:</strong><br>
-          ${order.total_amount || order.total || 0} TL
-        </p>
+          ${escapeHtml(
+            formatDateTurkish(date)
+          )}
+        </strong>
+
+        <span style="
+          color:#666;
+          font-size:13px;
+          margin-left:8px;
+        ">
+          ${dayOrders.length} sipariş
+        </span>
 
       </div>
 
     `;
+
+
+    Object.keys(slotGroups).forEach(slot => {
+
+      const slotOrders =
+        slotGroups[slot];
+
+
+      let slotQuantity = 0;
+      let slotTotal = 0;
+
+
+      slotOrders.forEach(order => {
+
+        slotQuantity +=
+          Number(order.quantity || 0);
+
+        slotTotal +=
+          Number(
+            order.total_amount ||
+            order.total ||
+            0
+          );
+
+      });
+
+
+      html += `
+
+        <div style="
+          margin-top:14px;
+        ">
+
+          <div style="
+            background:#222;
+            color:white;
+            padding:8px 10px;
+            font-size:14px;
+            font-weight:bold;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          ">
+
+            <span>
+              ${escapeHtml(slot)}
+            </span>
+
+            <span style="
+              font-weight:normal;
+              font-size:12px;
+            ">
+              ${slotOrders.length} sipariş
+              · ${slotQuantity} adet
+            </span>
+
+          </div>
+
+
+          <div style="
+            overflow-x:auto;
+            background:white;
+          ">
+
+            <table style="
+              width:100%;
+              border-collapse:collapse;
+              font-size:13px;
+              min-width:850px;
+            ">
+
+              <thead>
+
+                <tr style="
+                  background:#f3f3f3;
+                  border-bottom:1px solid #ccc;
+                ">
+
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
+                    Müşteri
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
+                    Telefon
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
+                    Mahalle
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
+                    Adres
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:left;
+                  ">
+                    Ürün
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:center;
+                  ">
+                    Adet
+                  </th>
+
+                  <th style="
+                    padding:7px;
+                    text-align:right;
+                  ">
+                    Tutar
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+      `;
+
+
+      slotOrders.forEach(order => {
+
+        html += `
+
+          <tr style="
+            border-bottom:1px solid #e5e5e5;
+          ">
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              white-space:nowrap;
+            ">
+              ${escapeHtml(
+                order.customer_name || "-"
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              white-space:nowrap;
+            ">
+              ${escapeHtml(
+                order.phone || "-"
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+            ">
+              ${escapeHtml(
+                order.neighborhood || "-"
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              max-width:240px;
+            ">
+              ${escapeHtml(
+                order.address || "-"
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              white-space:nowrap;
+            ">
+              ${escapeHtml(
+                order.product_name || "-"
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              text-align:center;
+              font-weight:bold;
+            ">
+              ${Number(
+                order.quantity || 0
+              )}
+            </td>
+
+            <td style="
+              padding:8px 7px;
+              vertical-align:top;
+              text-align:right;
+              white-space:nowrap;
+              font-weight:bold;
+            ">
+              ${Number(
+                order.total_amount ||
+                order.total ||
+                0
+              ).toLocaleString("tr-TR")}
+              TL
+            </td>
+
+          </tr>
+
+        `;
+
+      });
+
+
+      html += `
+
+              </tbody>
+
+              <tfoot>
+
+                <tr style="
+                  background:#f8f8f8;
+                  border-top:1px solid #ccc;
+                  font-weight:bold;
+                ">
+
+                  <td
+                    colspan="5"
+                    style="
+                      padding:8px 7px;
+                      text-align:right;
+                    "
+                  >
+                    Saat Toplamı:
+                  </td>
+
+                  <td style="
+                    padding:8px 7px;
+                    text-align:center;
+                  ">
+                    ${slotQuantity}
+                  </td>
+
+                  <td style="
+                    padding:8px 7px;
+                    text-align:right;
+                    white-space:nowrap;
+                  ">
+                    ${slotTotal.toLocaleString("tr-TR")}
+                    TL
+                  </td>
+
+                </tr>
+
+              </tfoot>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      `;
+
+    });
+
   });
 
 
   container.innerHTML =
     html;
+}
+
+
+/* =========================
+   TARİH GÖRÜNÜMÜ
+========================= */
+
+function formatDateTurkish(dateString) {
+
+  if (!dateString) {
+    return "Tarih yok";
+  }
+
+
+  const parts =
+    dateString.split("-");
+
+
+  if (parts.length !== 3) {
+    return dateString;
+  }
+
+
+  const year =
+    parts[0];
+
+  const month =
+    parts[1];
+
+  const day =
+    parts[2];
+
+
+  const monthNames = [
+    "",
+    "Ocak",
+    "Şubat",
+    "Mart",
+    "Nisan",
+    "Mayıs",
+    "Haziran",
+    "Temmuz",
+    "Ağustos",
+    "Eylül",
+    "Ekim",
+    "Kasım",
+    "Aralık"
+  ];
+
+
+  return (
+    Number(day) +
+    " " +
+    monthNames[
+      Number(month)
+    ] +
+    " " +
+    year
+  );
 }
 
 
