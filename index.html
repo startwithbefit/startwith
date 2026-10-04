@@ -1286,177 +1286,89 @@ function getTomorrowDate() {
 }
 
 
+
+function formatLocalDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getMinimumOrderDate() {
+  const date = new Date();
+  // 18:00'dan önce en erken yarın, 18:00 ve sonrasında en erken öbür gün.
+  date.setDate(date.getDate() + (date.getHours() >= 18 ? 2 : 1));
+  return formatLocalDate(date);
+}
+
 /* =====================================================
    SİPARİŞ EKRANI
 ===================================================== */
 
 function showOrderForm() {
 
+  const minimumDate = getMinimumOrderDate();
+  const afterCutoff = new Date().getHours() >= 18;
+
   document
     .getElementById("home")
     .innerHTML = `
 
-
-      <h2>
-        Sipariş Oluştur
-      </h2>
-
-
-      <p>
-
-        Teslimat günü:
-
-        <strong>
-          Yarın
-        </strong>
-
-      </p>
-
-
-      <label>
-        Teslimat Saati
-      </label>
-
-
-      <select
-        id="deliverySlot"
-      >
-
-
-        <option value="">
-          Teslimat saati seçin
-        </option>
-
-
-        <option value="07:00-07:30">
-          07:00 - 07:30
-        </option>
-
-
-        <option value="07:30-08:00">
-          07:30 - 08:00
-        </option>
-
-
-        <option value="08:00-08:30">
-          08:00 - 08:30
-        </option>
-
-
-        <option value="08:30-09:00">
-          08:30 - 09:00
-        </option>
-
-
-        <option value="09:00-09:30">
-          09:00 - 09:30
-        </option>
-
-
-        <option value="09:30-10:00">
-          09:30 - 10:00
-        </option>
-
-
-        <option value="10:00-10:30">
-          10:00 - 10:30
-        </option>
-
-
-        <option value="10:30-11:00">
-          10:30 - 11:00
-        </option>
-
-
-        <option value="11:00-11:30">
-          11:00 - 11:30
-        </option>
-
-
-        <option value="11:30-12:00">
-          11:30 - 12:00
-        </option>
-
-
-        <option value="12:00-12:30">
-          12:00 - 12:30
-        </option>
-
-
-        <option value="12:30-13:00">
-          12:30 - 13:00
-        </option>
-
-
-        <option value="13:00-13:30">
-          13:00 - 13:30
-        </option>
-
-
-        <option value="13:30-14:00">
-          13:30 - 14:00
-        </option>
-
-
-      </select>
-
+      <h2>Sipariş Oluştur</h2>
 
       <div style="
-        background:white;
-        padding:12px;
-        border-radius:8px;
-        margin-top:15px;
+        background:#fff7d6;
+        border:1px solid #f1d47a;
+        padding:14px;
+        border-radius:14px;
+        margin:12px 0 18px;
+        line-height:1.55;
+        color:#4d442d;
       ">
-
-
-        <strong>
-          Ödeme
-        </strong>
-
-
-        <p>
-          Kapıda ödeme
-        </p>
-
-
+        <strong>Önemli bilgi</strong><br>
+        Bugün için online sipariş alamıyoruz. Ertesi gün için vereceğiniz siparişlerde son sipariş saatimiz <strong>18:00</strong>'dır.
+        ${afterCutoff ? `<br><br><strong>Bugün saat 18:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
+        <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
       </div>
 
-
-      <button
-        onclick="
-          createOrder()
-        "
+      <label>Teslimat Tarihi</label>
+      <input
+        type="date"
+        id="deliveryDate"
+        min="${minimumDate}"
+        value="${minimumDate}"
       >
 
-        Siparişi Onayla
+      <label>Teslimat Saati</label>
 
-      </button>
+      <select id="deliverySlot">
+        <option value="">Teslimat saati seçin</option>
+        <option value="07:00-07:30">07:00 - 07:30</option>
+        <option value="07:30-08:00">07:30 - 08:00</option>
+        <option value="08:00-08:30">08:00 - 08:30</option>
+        <option value="08:30-09:00">08:30 - 09:00</option>
+        <option value="09:00-09:30">09:00 - 09:30</option>
+        <option value="09:30-10:00">09:30 - 10:00</option>
+        <option value="10:00-10:30">10:00 - 10:30</option>
+        <option value="10:30-11:00">10:30 - 11:00</option>
+        <option value="11:00-11:30">11:00 - 11:30</option>
+        <option value="11:30-12:00">11:30 - 12:00</option>
+        <option value="12:00-12:30">12:00 - 12:30</option>
+        <option value="12:30-13:00">12:30 - 13:00</option>
+        <option value="13:00-13:30">13:00 - 13:30</option>
+        <option value="13:30-14:00">13:30 - 14:00</option>
+      </select>
 
+      <div style="background:white;padding:12px;border-radius:8px;margin-top:15px;">
+        <strong>Ödeme</strong>
+        <p>Kapıda nakit ödeme</p>
+      </div>
 
-      <button
-        class="back"
-        onclick="
-          showCart()
-        "
-      >
+      <button onclick="createOrder()">Siparişi Onayla</button>
+      <button class="back" onclick="showCart()">Sepete Dön</button>
 
-        Sepete Dön
-
-      </button>
-
-
-      <p
-        id="orderMessage"
-
-        style="
-          text-align:center;
-          margin-top:15px;
-        "
-      ></p>
-
-
+      <p id="orderMessage" style="text-align:center;margin-top:15px;"></p>
     `;
-
 }
 
 
@@ -1470,6 +1382,14 @@ async function createOrder() {
     document
       .getElementById(
         "deliverySlot"
+      )
+      .value;
+
+
+  const selectedDate =
+    document
+      .getElementById(
+        "deliveryDate"
       )
       .value;
 
@@ -1575,19 +1495,23 @@ async function createOrder() {
   }
 
 
-  const now =
-    new Date();
-
-
-  if (
-    now.getHours() >= 18
-  ) {
-
+  if (!selectedDate) {
     message.innerText =
-      "Bu gün için online sipariş süresi dolmuştur.";
-
+      "Lütfen teslimat tarihi seçin.";
     return;
+  }
 
+
+  const minimumDate =
+    getMinimumOrderDate();
+
+
+  if (selectedDate < minimumDate) {
+    message.innerText =
+      new Date().getHours() >= 18
+        ? "Saat 18:00 geçtiği için yarın için online sipariş veremezsiniz. Lütfen bir sonraki günü veya daha ileri bir tarihi seçin."
+        : "Bugün için online sipariş alamıyoruz. Lütfen yarın veya daha ileri bir tarih seçin.";
+    return;
   }
 
 
@@ -1604,7 +1528,7 @@ async function createOrder() {
 
 
   const deliveryDate =
-    getTomorrowDate();
+    selectedDate;
 
 
   const slotParts =
