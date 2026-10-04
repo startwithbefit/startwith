@@ -70,6 +70,33 @@
     .product-add { width:auto; min-width:86px; margin:0; padding:10px 14px; border-radius:14px; background:var(--yellow); color:#3f330e; box-shadow:none; font-size:14px; }
     .menu-actions { margin-top:20px; padding-top:7px; }
     @media (max-width:380px) { .menu-view{margin:-18px;padding:17px}.product-card{padding:14px}.product-description{font-size:12.5px}.product-add{min-width:76px;padding:9px 11px} }
+
+
+    /* Ürün detay + sepet + sipariş başarı ekranı */
+    .detail-card,.cart-card,.success-card{background:rgba(255,253,248,.94);border:1px solid rgba(47,125,50,.14);border-radius:24px;padding:18px;box-shadow:0 12px 30px rgba(23,77,43,.08);margin-top:14px}
+    .detail-kicker,.cart-kicker,.success-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--green);text-transform:uppercase}
+    .detail-title,.cart-title,.success-title{margin:7px 0 8px;color:var(--forest);font-size:27px;line-height:1.12}
+    .detail-desc{line-height:1.65;color:var(--muted);margin:10px 0 16px}
+    .detail-price-row,.cart-total-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-top:1px solid rgba(23,77,43,.10)}
+    .detail-price,.cart-total{font-size:22px;font-weight:850;color:var(--green)}
+    .detail-select{margin-top:8px;background:var(--cream);border:1px solid rgba(47,125,50,.22);border-radius:14px;padding:13px 14px;color:var(--text)}
+    .detail-add{background:var(--yellow)!important;color:var(--forest)!important;box-shadow:none!important}
+    .cart-item{background:rgba(255,253,248,.96);border:1px solid rgba(47,125,50,.13);border-radius:20px;padding:15px;margin-top:10px;box-shadow:0 8px 22px rgba(23,77,43,.06)}
+    .cart-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .cart-item-name{font-weight:800;color:var(--forest);line-height:1.3}
+    .cart-item-price{font-weight:850;color:var(--green);white-space:nowrap}
+    .cart-unit{font-size:13px;color:var(--muted);margin-top:5px}
+    .qty-row{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin-top:14px}
+    .qty-btn{width:40px!important;height:40px!important;margin:0!important;padding:0!important;border-radius:50%!important;background:var(--sage)!important;color:var(--forest)!important;box-shadow:none!important;font-size:21px!important}
+    .qty-number{min-width:24px;text-align:center;font-size:17px;color:var(--forest)}
+    .remove-btn{width:auto!important;margin:0 0 0 auto!important;padding:9px 12px!important;background:transparent!important;color:#9b5b4b!important;border:1px solid rgba(155,91,75,.22)!important;box-shadow:none!important;font-size:12px!important}
+    .cart-empty{text-align:center;color:var(--muted);padding:28px 8px}
+    .checkout-btn{background:var(--yellow)!important;color:var(--forest)!important;box-shadow:none!important;font-weight:850!important}
+    .success-icon{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;background:var(--sage);font-size:34px}
+    .success-card{text-align:center}
+    .payment-notice{text-align:left;background:var(--beige);border-left:4px solid var(--yellow);border-radius:16px;padding:15px;margin:16px 0;color:var(--text);line-height:1.55}
+    .order-summary{text-align:left;background:var(--cream);border-radius:18px;padding:14px 16px;margin-top:14px}
+    .order-summary p{margin:9px 0;color:var(--text);line-height:1.45}
   </style>
 </head>
 
@@ -974,152 +1001,37 @@ function showProductDetail(
   price,
   description
 ) {
-
   let quantityOptions = "";
-
-
-  for (
-    let i = 1;
-    i <= 10;
-    i++
-  ) {
-
-    quantityOptions += `
-
-      <option value="${i}">
-        ${i} adet
-      </option>
-
-    `;
-
+  for (let i = 1; i <= 10; i++) {
+    quantityOptions += `<option value="${i}">${i} adet</option>`;
   }
 
+  document.getElementById("home").innerHTML = `
+    <div class="detail-card">
+      <div class="detail-kicker">STARTWITH · BE FIT</div>
+      <h2 class="detail-title">${name}</h2>
+      <p class="detail-desc">${description}</p>
 
-  document
-    .getElementById("home")
-    .innerHTML = `
-
-
-      <h2>
-        ${name}
-      </h2>
-
-
-      <div style="
-        background:white;
-        padding:16px;
-        border-radius:10px;
-        margin-top:15px;
-      ">
-
-
-        <p style="
-          line-height:1.6;
-          color:#555;
-        ">
-
-          ${description}
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Birim fiyat:
-          </strong>
-
-          ${
-            price.toLocaleString(
-              "tr-TR"
-            )
-          } TL
-
-        </p>
-
-
-        <label>
-
-          <strong>
-            Adet
-          </strong>
-
-        </label>
-
-
-        <select
-          id="productQuantity"
-
-          onchange="
-            updateProductTotal(
-              ${price}
-            )
-          "
-
-          style="
-            margin-top:8px;
-            width:100%;
-          "
-        >
-
-          ${quantityOptions}
-
-        </select>
-
-
-        <div style="
-          margin-top:18px;
-          padding-top:15px;
-          border-top:1px solid #eee;
-          font-size:18px;
-        ">
-
-
-          <strong>
-            Toplam:
-          </strong>
-
-
-          <span id="productTotal">
-
-            ${
-              price.toLocaleString(
-                "tr-TR"
-              )
-            } TL
-
-          </span>
-
-        </div>
-
-
-        <button
-
-          onclick='addProductToCart(
-            ${JSON.stringify(name)},
-            ${price}
-          )'
-
-        >
-
-          Sepete Ekle
-
-        </button>
-
+      <div class="detail-price-row">
+        <span>Birim fiyat</span>
+        <span class="detail-price">${price.toLocaleString("tr-TR")} TL</span>
       </div>
 
+      <label for="productQuantity"><strong>Adet</strong></label>
+      <select id="productQuantity" class="detail-select" onchange="updateProductTotal(${price})">
+        ${quantityOptions}
+      </select>
 
-      <button
-        class="back"
-        onclick="showMenu()"
-      >
+      <div class="detail-price-row" style="margin-top:14px;">
+        <strong>Toplam</strong>
+        <span id="productTotal" class="detail-price">${price.toLocaleString("tr-TR")} TL</span>
+      </div>
 
-        Menüye Dön
+      <button class="detail-add" onclick='addProductToCart(${JSON.stringify(name)}, ${price})'>Sepete Ekle</button>
+    </div>
 
-      </button>
-
-    `;
-
+    <button class="back" onclick="showMenu()">Menüye Dön</button>
+  `;
 }
 
 
@@ -1222,241 +1134,50 @@ function addProductToCart(
 ===================================================== */
 
 function showCart() {
-
   let total = 0;
-
   let products = "";
 
-
-  cart.forEach(
-    (item, index) => {
-
-
-      const itemTotal =
-        item.price *
-        item.quantity;
-
-
-      total +=
-        itemTotal;
-
-
-      products += `
-
-
-        <div style="
-          background:white;
-          padding:12px;
-          border-radius:8px;
-          margin-top:8px;
-        ">
-
-
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
-          ">
-
-
-            <strong>
-              ${item.name}
-            </strong>
-
-
-            <strong>
-
-              ${
-                itemTotal
-                  .toLocaleString(
-                    "tr-TR"
-                  )
-              } TL
-
-            </strong>
-
+  cart.forEach((item, index) => {
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+    products += `
+      <div class="cart-item">
+        <div class="cart-item-top">
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-unit">${item.price.toLocaleString("tr-TR")} TL / adet</div>
           </div>
-
-
-          <div style="
-            margin-top:8px;
-            font-size:14px;
-            color:#555;
-          ">
-
-            ${
-              item.price
-                .toLocaleString(
-                  "tr-TR"
-                )
-            } TL / adet
-
-          </div>
-
-
-          <div style="
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:15px;
-            margin-top:10px;
-          ">
-
-
-            <button
-
-              style="
-                width:42px;
-                margin-top:0;
-              "
-
-              onclick="
-                decreaseQuantity(
-                  ${index}
-                )
-              "
-            >
-
-              −
-
-            </button>
-
-
-            <strong style="
-              font-size:17px;
-            ">
-
-              ${item.quantity}
-
-            </strong>
-
-
-            <button
-
-              style="
-                width:42px;
-                margin-top:0;
-              "
-
-              onclick="
-                increaseQuantity(
-                  ${index}
-                )
-              "
-            >
-
-              +
-
-            </button>
-
-          </div>
-
-
-          <button
-
-            onclick="
-              removeFromCart(
-                ${index}
-              )
-            "
-          >
-
-            Ürünü Sil
-
-          </button>
-
-
+          <div class="cart-item-price">${itemTotal.toLocaleString("tr-TR")} TL</div>
         </div>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="decreaseQuantity(${index})">−</button>
+          <strong class="qty-number">${item.quantity}</strong>
+          <button class="qty-btn" onclick="increaseQuantity(${index})">+</button>
+          <button class="remove-btn" onclick="removeFromCart(${index})">Sil</button>
+        </div>
+      </div>`;
+  });
 
-      `;
-
-    }
-  );
-
-
-  if (
-    cart.length === 0
-  ) {
-
-    products =
-      "<p>Sepetiniz boş.</p>";
-
+  if (cart.length === 0) {
+    products = `<div class="cart-empty">Sepetiniz henüz boş 🌿</div>`;
   }
 
+  document.getElementById("home").innerHTML = `
+    <div class="cart-kicker">STARTWITH · BE FIT</div>
+    <h2 class="cart-title">Sepetim</h2>
+    ${products}
 
-  document
-    .getElementById("home")
-    .innerHTML = `
+    <div class="cart-card">
+      <div class="cart-total-row" style="border-top:0;padding:0;">
+        <strong>Toplam</strong>
+        <span class="cart-total">${total.toLocaleString("tr-TR")} TL</span>
+      </div>
+      ${cart.length > 0 ? `<button class="checkout-btn" onclick="showOrderForm()">Siparişi Oluştur</button>` : ""}
+    </div>
 
-
-      <h2>
-        Sepetim
-      </h2>
-
-
-      ${products}
-
-
-      <h3 style="
-        margin-top:20px;
-      ">
-
-        Toplam:
-
-        ${
-          total
-            .toLocaleString(
-              "tr-TR"
-            )
-        } TL
-
-      </h3>
-
-
-      ${
-        cart.length > 0
-
-          ? `
-
-            <button
-              onclick="
-                showOrderForm()
-              "
-            >
-
-              Siparişi Oluştur
-
-            </button>
-
-          `
-
-          : ""
-      }
-
-
-      <button
-        class="back"
-        onclick="showMenu()"
-      >
-
-        Menüye Dön
-
-      </button>
-
-
-      <button
-        class="back"
-        onclick="showHome()"
-      >
-
-        Ana Sayfa
-
-      </button>
-
-
-    `;
-
+    <button class="back" onclick="showMenu()">Menüye Dön</button>
+    <button class="back" onclick="showHome()">Ana Sayfa</button>
+  `;
 }
 
 
@@ -2137,114 +1858,28 @@ async function createOrder() {
   document
     .getElementById("home")
     .innerHTML = `
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <div class="success-kicker">SİPARİŞ TAMAM</div>
+        <h2 class="success-title">Siparişiniz oluşturuldu!</h2>
 
+        <div class="payment-notice">
+          <strong>Lütfen dikkat:</strong> Henüz yalnızca nakit ödeme alabiliyoruz.<br>
+          Kart ile ödeme alabildiğimizde sizi bilgilendireceğiz.<br><br>
+          <strong>Sabah görüşmek üzere! ☀️</strong>
+        </div>
 
-      <h2>
-        Siparişiniz Alındı!
-      </h2>
-
-
-      <p style="
-        text-align:center;
-      ">
-
-        Siparişiniz başarıyla oluşturuldu.
-
-      </p>
-
-
-      <div style="
-        background:white;
-        padding:15px;
-        border-radius:10px;
-        margin-top:20px;
-      ">
-
-
-        <p>
-
-          <strong>
-            Teslimat günü:
-          </strong>
-
-          ${deliveryDate}
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Teslimat saati:
-          </strong>
-
-          ${slot}
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Adres:
-          </strong>
-
-          ${address}
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Sipariş:
-          </strong>
-
-          ${productSummary}
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Toplam:
-          </strong>
-
-          ${
-            total
-              .toLocaleString(
-                "tr-TR"
-              )
-          } TL
-
-        </p>
-
-
-        <p>
-
-          <strong>
-            Ödeme:
-          </strong>
-
-          Kapıda ödeme
-
-        </p>
-
-
+        <div class="order-summary">
+          <p><strong>Teslimat günü:</strong> ${deliveryDate}</p>
+          <p><strong>Teslimat saati:</strong> ${slot}</p>
+          <p><strong>Adres:</strong> ${address}</p>
+          <p><strong>Sipariş:</strong> ${productSummary}</p>
+          <p><strong>Toplam:</strong> ${total.toLocaleString("tr-TR")} TL</p>
+          <p><strong>Ödeme:</strong> Nakit / kapıda ödeme</p>
+        </div>
       </div>
 
-
-      <button
-        onclick="
-          showHome()
-        "
-      >
-
-        Ana Sayfa
-
-      </button>
-
+      <button onclick="showHome()">Ana Sayfa</button>
 
     `;
 
