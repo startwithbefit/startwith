@@ -283,12 +283,19 @@ function showMenu() {
 
 function addToCart() {
 
-  cart.push({
-    name: "Startwith Fit Kahvaltı",
-    price: 249
-  });
+  const existingItem = cart.find(
+    item => item.name === "Startwith Fit Kahvaltı"
+  );
 
-  alert("Ürün sepete eklendi!");
+  if (existingItem) {
+    existingItem.quantity++;
+  } else {
+    cart.push({
+      name: "Startwith Fit Kahvaltı",
+      price: 249,
+      quantity: 1
+    });
+  }
 
   showCart();
 }
@@ -296,22 +303,43 @@ function addToCart() {
 function showCart() {
 
   let total = 0;
-
-  cart.forEach(item => {
-    total += item.price;
-  });
-
   let products = "";
 
   cart.forEach((item, index) => {
+
+    total += item.price * item.quantity;
+
     products += `
       <div style="background:white; padding:15px; border-radius:10px; margin-top:10px;">
+
         <strong>${item.name}</strong>
-        <p>${item.price} TL</p>
+
+        <p>${item.price} TL / adet</p>
+
+        <div style="display:flex; align-items:center; justify-content:center; gap:15px;">
+
+          <button
+            style="width:50px; margin-top:0;"
+            onclick="decreaseQuantity(${index})">
+            −
+          </button>
+
+          <strong style="font-size:18px;">
+            ${item.quantity}
+          </strong>
+
+          <button
+            style="width:50px; margin-top:0;"
+            onclick="increaseQuantity(${index})">
+            +
+          </button>
+
+        </div>
 
         <button onclick="removeFromCart(${index})">
           Ürünü Sil
         </button>
+
       </div>
     `;
   });
@@ -341,6 +369,24 @@ function showCart() {
       Ana Sayfa
     </button>
   `;
+}
+
+function increaseQuantity(index) {
+
+  cart[index].quantity++;
+
+  showCart();
+}
+
+function decreaseQuantity(index) {
+
+  if (cart[index].quantity > 1) {
+    cart[index].quantity--;
+  } else {
+    cart.splice(index, 1);
+  }
+
+  showCart();
 }
 
 function removeFromCart(index) {
