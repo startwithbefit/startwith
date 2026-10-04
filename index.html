@@ -625,8 +625,8 @@ async function createOrder() {
 
   const slotParts = slot.split("-");
 
-  const startTime = slotParts[0];
-  const endTime = slotParts[1];
+  const startTime = slotParts[0] + ":00";
+  const endTime = slotParts[1] + ":00";
 
 
   message.innerText =
@@ -664,6 +664,43 @@ async function createOrder() {
     message.innerText =
       "Seçtiğiniz teslimat saati için uygun bir teslimat kaydı bulunamadı. " +
       "Lütfen başka bir saat seçin.";
+
+    return;
+  }
+
+
+  /* =========================
+     KAPASİTE KONTROLÜ
+  ========================= */
+
+  const {
+    count: orderCount,
+    error: countError
+  } = await supabaseClient
+    .from("orders")
+    .select("*", {
+      count: "exact",
+      head: true
+    })
+    .eq("delivery_slot_id", deliverySlot.id);
+
+  if (countError) {
+
+    message.innerText =
+      "Teslimat kapasitesi kontrolünde hata oluştu: " +
+      countError.message;
+
+    return;
+  }
+
+
+  if (orderCount >= deliverySlot.capacity) {
+
+    message.innerText =
+      "Bu teslimat saati şu anda dolu. " +
+      "Lütfen başka bir teslimat saati seçin. " +
+      "Eğer bu saat sizin için uygunsa, bizimle iletişime geçin; " +
+      "size yardımcı olmaya çalışacağız.";
 
     return;
   }
