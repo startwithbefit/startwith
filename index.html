@@ -7,76 +7,46 @@
   <title>Startwith</title>
 
   <style>
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; }
+    :root {
+      --forest:#174d2b; --green:#2f7d32; --leaf:#6fa84f; --sage:#dce7c8;
+      --cream:#fbf7ec; --beige:#efe4cf; --brown:#a9825a; --yellow:#f5bf2f;
+      --text:#173522; --muted:#6f756c; --white:#fffdf8;
     }
-
+    html,body { min-height:100%; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7f2;
-      color: #222;
+      margin:0; font-family:Arial,Helvetica,sans-serif; color:var(--text);
+      background:linear-gradient(160deg,#fffaf0 0%,#f4eddd 55%,#e8efd9 100%);
     }
-
-    .container {
-      max-width: 480px;
-      margin: auto;
-      padding: 30px 20px;
+    body::before, body::after {
+      content:""; position:fixed; border-radius:50%; filter:blur(2px); z-index:-1; opacity:.55;
     }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      background: #222;
-      color: white;
-      font-size: 16px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    .secondary {
-      background: white;
-      color: #222;
-      border: 1px solid #ddd;
-    }
-
-    .form {
-      display: none;
-      margin-top: 25px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 15px;
-    }
-
-    .back {
-      background: #eee;
-      color: #222;
-    }
-
-    #registerMessage,
-    #loginMessage {
-      text-align: center;
-      margin-top: 15px;
-    }
+    body::before { width:220px;height:220px;background:#dfe9c9;right:-90px;top:-70px; }
+    body::after { width:180px;height:180px;background:#f7d978;left:-90px;bottom:-80px;opacity:.28; }
+    .container { max-width:480px; min-height:100dvh; margin:auto; padding:38px 20px 28px; }
+    .brand { text-align:center; margin:4px auto 28px; }
+    .brand-icon { position:relative; width:92px; height:54px; margin:0 auto 6px; }
+    .brand-sun { position:absolute; width:48px;height:25px;border-radius:48px 48px 0 0;background:var(--yellow);left:18px;top:16px; }
+    .brand-line { position:absolute;width:86px;height:16px;border-top:5px solid var(--forest);border-radius:50%;left:2px;top:37px;transform:rotate(2deg); }
+    .brand-leaf { position:absolute;width:27px;height:14px;background:var(--green);border-radius:100% 0 100% 0;right:2px;top:25px;transform:rotate(-18deg); }
+    .brand-name { margin:0; color:var(--forest); font-size:42px; line-height:.95; font-weight:800; letter-spacing:-2px; }
+    .brand-fit { margin-top:8px; color:var(--green); font-size:16px; font-weight:800; letter-spacing:7px; }
+    .subtitle { text-align:center;color:var(--muted);margin:0 auto 26px;font-size:15px;line-height:1.5; }
+    h1 { text-align:center;margin:0; }
+    h2 { color:var(--forest); margin:0 0 8px; font-size:27px; }
+    #home, .form { background:rgba(255,253,248,.86); border:1px solid rgba(23,77,43,.08); border-radius:28px; padding:22px; box-shadow:0 18px 45px rgba(73,61,40,.10); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+    #home:empty { display:none; }
+    button { width:100%;padding:15px 18px;border:none;border-radius:16px;background:var(--forest);color:white;font-size:16px;font-weight:700;margin-top:11px;cursor:pointer;box-shadow:0 8px 20px rgba(23,77,43,.14);transition:transform .15s ease,opacity .15s ease; }
+    button:active { transform:scale(.985); }
+    .secondary { background:#fffaf0;color:var(--forest);border:1.5px solid #b9c9aa;box-shadow:none; }
+    .form { display:none; margin-top:0; }
+    .form h2 { text-align:center; }
+    .form::before { content:""; display:block; width:42px; height:5px; border-radius:99px; background:var(--yellow); margin:0 auto 20px; }
+    input,select { width:100%;padding:15px 14px;margin-top:11px;border:1px solid #d9d5c8;border-radius:15px;font-size:15px;color:var(--text);background:#fffdf8;outline:none; }
+    input:focus,select:focus { border-color:var(--leaf); box-shadow:0 0 0 3px rgba(111,168,79,.12); }
+    .back { background:#eee5d5;color:var(--forest);box-shadow:none; }
+    #registerMessage,#loginMessage { text-align:center;margin:15px 0 0;color:var(--green);font-size:14px;line-height:1.45; }
+    @media (max-width:380px) { .container{padding:28px 15px 22px}.brand-name{font-size:36px} #home,.form{padding:18px} }
   </style>
 </head>
 
@@ -84,8 +54,16 @@
 
 <div class="container">
 
-  <h1>Startwith</h1>
-  <div class="subtitle">Sağlıklı kahvaltı kapınızda</div>
+  <div class="brand" aria-label="Startwith be fit">
+    <div class="brand-icon">
+      <span class="brand-sun"></span>
+      <span class="brand-line"></span>
+      <span class="brand-leaf"></span>
+    </div>
+    <h1 class="brand-name">Startwith</h1>
+    <div class="brand-fit">BE FIT</div>
+  </div>
+  <div class="subtitle">Güne iyi başla. Sağlıklı kahvaltın kapında.</div>
 
   <div id="home">
     <button onclick="showRegister()">Üye Ol</button>
