@@ -70,6 +70,12 @@
       background: #eee;
       color: #222;
     }
+
+    #registerMessage,
+    #loginMessage {
+      text-align: center;
+      margin-top: 15px;
+    }
   </style>
 </head>
 
@@ -124,7 +130,18 @@
 
 </div>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+
+const SUPABASE_URL = "https://jwwfwlddmordfudorrla.supabase.co";
+const SUPABASE_KEY = "BURAYA_PUBLISHABLE_KEY_GELECEK";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 function showRegister() {
   document.getElementById("home").style.display = "none";
@@ -144,14 +161,67 @@ function goHome() {
   document.getElementById("loginForm").style.display = "none";
 }
 
-function register() {
-  document.getElementById("registerMessage").innerText =
-    "Form çalışıyor. Bir sonraki adımda Supabase bağlantısını ekleyeceğiz.";
+async function register() {
+
+  const firstName = document.getElementById("firstName").value;
+  const lastName = document.getElementById("lastName").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
+  const neighborhood = document.getElementById("neighborhood").value;
+  const address = document.getElementById("address").value;
+  const password = document.getElementById("password").value;
+
+  const message = document.getElementById("registerMessage");
+
+  if (!firstName || !lastName || !phone || !email || !neighborhood || !address || !password) {
+    message.innerText = "Lütfen tüm alanları doldurun.";
+    return;
+  }
+
+  message.innerText = "Kayıt yapılıyor...";
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone,
+        neighborhood: neighborhood,
+        address: address
+      }
+    }
+  });
+
+  if (error) {
+    message.innerText = "Hata: " + error.message;
+    return;
+  }
+
+  message.innerText = "Kayıt başarılı! E-posta adresinizi kontrol edin.";
 }
 
-function login() {
-  document.getElementById("loginMessage").innerText =
-    "Giriş formu çalışıyor.";
+async function login() {
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  const message = document.getElementById("loginMessage");
+
+  message.innerText = "Giriş yapılıyor...";
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    message.innerText = "Hata: " + error.message;
+    return;
+  }
+
+  message.innerText = "Giriş başarılı!";
 }
 
 </script>
