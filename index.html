@@ -561,8 +561,10 @@ async function createOrder() {
     document.getElementById("orderMessage");
 
   if (!slot) {
+
     message.innerText =
       "Lütfen teslimat saati seçin.";
+
     return;
   }
 
@@ -575,8 +577,10 @@ async function createOrder() {
   } = await supabaseClient.auth.getUser();
 
   if (userError || !user) {
+
     message.innerText =
       "Oturumunuz bulunamadı. Lütfen tekrar giriş yapın.";
+
     return;
   }
 
@@ -705,8 +709,10 @@ async function createOrder() {
   let quantity = 0;
 
   cart.forEach(item => {
+
     total += item.price * item.quantity;
     quantity += item.quantity;
+
   });
 
 
@@ -736,6 +742,7 @@ async function createOrder() {
           product_name: cart[0].name,
           quantity: quantity,
           total: total,
+          total_amount: total,
           delivery_date: deliveryDate,
           delivery_slot: slot,
           delivery_slot_id: deliverySlot.id,
@@ -839,6 +846,7 @@ async function showOrders() {
     document.getElementById("home").innerHTML = `
       <h2>Siparişlerim</h2>
       <p>Lütfen tekrar giriş yapın.</p>
+
       <button class="back" onclick="showHome()">
         Ana Sayfa
       </button>
@@ -906,7 +914,7 @@ async function showOrders() {
 
           <p>Adet: ${order.quantity}</p>
 
-          <p>Toplam: ${order.total} TL</p>
+          <p>Toplam: ${order.total_amount || order.total} TL</p>
 
           <p>
             Teslimat:
