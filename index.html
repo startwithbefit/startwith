@@ -47,6 +47,29 @@
     .back { background:#eee5d5;color:var(--forest);box-shadow:none; }
     #registerMessage,#loginMessage { text-align:center;margin:15px 0 0;color:var(--green);font-size:14px;line-height:1.45; }
     @media (max-width:380px) { .container{padding:28px 15px 22px}.brand-name{font-size:36px} #home,.form{padding:18px} }
+
+    /* STARTWITH MENÜ TASARIMI */
+    .menu-view { margin:-22px; padding:20px; }
+    .menu-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+    .menu-top-copy { min-width:0; }
+    .menu-kicker { color:var(--green); font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+    .menu-title { margin:0; color:var(--forest); font-size:28px; line-height:1.05; }
+    .menu-cart { width:auto; min-width:54px; height:48px; margin:0; padding:0 13px; border-radius:16px; background:#fff8df; color:var(--forest); border:1px solid #eadba5; box-shadow:none; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .menu-cart-icon { font-size:20px; line-height:1; }
+    .menu-cart-count { min-width:20px; height:20px; padding:0 5px; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; background:var(--yellow); color:#49370a; font-size:11px; font-weight:800; }
+    .menu-note { margin:0 0 18px; color:var(--muted); font-size:14px; line-height:1.5; }
+    .menu-section-label { display:flex; align-items:center; gap:9px; margin:18px 0 9px; color:var(--forest); font-size:14px; font-weight:800; }
+    .menu-section-label::before { content:''; width:24px; height:5px; border-radius:99px; background:var(--yellow); }
+    .product-card { background:#fffdf8; border:1px solid #e8e1d2; border-radius:20px; padding:16px; margin-top:11px; box-shadow:0 8px 22px rgba(71,61,41,.06); }
+    .product-row { display:flex; align-items:flex-start; gap:13px; }
+    .product-copy { flex:1; min-width:0; }
+    .product-name { display:block; color:var(--forest); font-size:17px; line-height:1.25; }
+    .product-description { margin-top:7px; color:#687067; font-size:13px; line-height:1.5; }
+    .product-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; }
+    .product-price { color:var(--green); font-size:18px; font-weight:800; }
+    .product-add { width:auto; min-width:86px; margin:0; padding:10px 14px; border-radius:14px; background:var(--yellow); color:#3f330e; box-shadow:none; font-size:14px; }
+    .menu-actions { margin-top:20px; padding-top:7px; }
+    @media (max-width:380px) { .menu-view{margin:-18px;padding:17px}.product-card{padding:14px}.product-description{font-size:12.5px}.product-add{min-width:76px;padding:9px 11px} }
   </style>
 </head>
 
@@ -882,132 +905,63 @@ function getProducts() {
 
 function showMenu() {
 
-  const products =
-    getProducts();
+  const products = getProducts();
+  const breakfastProducts = products.slice(0, 5);
+  const extraProducts = products.slice(5);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-
-  let menuHtml = "";
-
-
-  products.forEach(
-    product => {
-
-      menuHtml += `
-
-        <div style="
-          background:white;
-          padding:14px;
-          border-radius:8px;
-          margin-top:9px;
-        ">
-
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:10px;
-          ">
-
-
-            <div style="
-              flex:1;
-            ">
-
-              <strong style="
-                font-size:16px;
-              ">
-                ${product.name}
-              </strong>
-
-
-              <div style="
-                margin-top:7px;
-                font-size:14px;
-                line-height:1.5;
-                color:#555;
-              ">
-
-                ${product.description}
-
-              </div>
-
-
-              <div style="
-                margin-top:8px;
-                font-weight:bold;
-                font-size:15px;
-              ">
-
-                ${
-                  product.price
-                    .toLocaleString(
-                      "tr-TR"
-                    )
-                } TL
-
-              </div>
-
+  function renderProductCard(product) {
+    return `
+      <div class="product-card">
+        <div class="product-row">
+          <div class="product-copy">
+            <strong class="product-name">${product.name}</strong>
+            <div class="product-description">${product.description}</div>
+            <div class="product-bottom">
+              <div class="product-price">${product.price.toLocaleString("tr-TR")} TL</div>
+              <button
+                class="product-add"
+                onclick='showProductDetail(${JSON.stringify(product.name)}, ${product.price}, ${JSON.stringify(product.description)})'
+              >
+                + Ekle
+              </button>
             </div>
-
-
-            <button
-              style="
-                width:auto;
-                margin:0;
-                padding:8px 12px;
-                flex-shrink:0;
-              "
-
-              onclick='showProductDetail(
-                ${JSON.stringify(product.name)},
-                ${product.price},
-                ${JSON.stringify(product.description)}
-              )'
-            >
-
-              Ekle
-
-            </button>
-
           </div>
-
         </div>
-
-      `;
-
-    }
-  );
-
-
-  document
-    .getElementById("home")
-    .innerHTML = `
-
-      <h2>
-        Menü
-      </h2>
-
-
-      ${menuHtml}
-
-
-      <button
-        class="secondary"
-        onclick="showCart()"
-      >
-        Sepetim
-      </button>
-
-
-      <button
-        class="back"
-        onclick="showHome()"
-      >
-        Ana Sayfa
-      </button>
-
+      </div>
     `;
+  }
 
+  const breakfastHtml = breakfastProducts.map(renderProductCard).join("");
+  const extrasHtml = extraProducts.map(renderProductCard).join("");
+
+  document.getElementById("home").innerHTML = `
+    <div class="menu-view">
+      <div class="menu-top">
+        <div class="menu-top-copy">
+          <div class="menu-kicker">STARTWITH · BE FIT</div>
+          <h2 class="menu-title">Bugün ne seçelim?</h2>
+        </div>
+        <button class="menu-cart" onclick="showCart()" aria-label="Sepetim">
+          <span class="menu-cart-icon">🛒</span>
+          <span class="menu-cart-count">${cartCount}</span>
+        </button>
+      </div>
+
+      <p class="menu-note">Ev yapımı, dengeli ve güne iyi başlaman için hazırlanmış kahvaltılar.</p>
+
+      <div class="menu-section-label">Kahvaltılar</div>
+      ${breakfastHtml}
+
+      <div class="menu-section-label">Yan Ürünler</div>
+      ${extrasHtml}
+
+      <div class="menu-actions">
+        <button class="secondary" onclick="showCart()">Sepetim · ${cartCount} ürün</button>
+        <button class="back" onclick="showHome()">Ana Sayfa</button>
+      </div>
+    </div>
+  `;
 }
 
 
