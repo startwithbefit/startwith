@@ -1172,7 +1172,8 @@ function showCart() {
         <strong>Toplam</strong>
         <span class="cart-total">${total.toLocaleString("tr-TR")} TL</span>
       </div>
-      ${cart.length > 0 ? `<button class="checkout-btn" onclick="showOrderForm()">Siparişi Oluştur</button>` : ""}
+      ${cart.length > 0 && total >= 200 ? `<button class="checkout-btn" onclick="showOrderForm()">Siparişi Oluştur</button>` : ""}
+      ${cart.length > 0 && total < 200 ? `<div style="margin-top:14px;background:#fff7d6;border:1px solid #f1d47a;padding:12px;border-radius:12px;color:#4d442d;line-height:1.45;"><strong>Minimum sepet tutarı 200 TL'dir.</strong><br>Sipariş verebilmek için sepetinize en az ${(200-total).toLocaleString("tr-TR")} TL daha ürün eklemelisiniz.</div>` : ""}
     </div>
 
     <button class="back" onclick="showMenu()">Menüye Dön</button>
@@ -1329,6 +1330,9 @@ function showOrderForm() {
       Her yarım saatlik zaman diliminde en fazla 3 sipariş alınır.
     </div>
 
+    <label for="orderNote">Sipariş Notu <span style="font-weight:400;color:#6f756c;">(isteğe bağlı)</span></label>
+    <textarea id="orderNote" maxlength="500" placeholder="Örn: Zili çalmayın, peyniri ayrı paketleyebilir misiniz?" style="width:100%;min-height:90px;box-sizing:border-box;border:1px solid #d8d2c5;border-radius:12px;padding:12px;font:inherit;resize:vertical;background:#fffdf8;"></textarea>
+
     <div style="background:white;padding:12px;border-radius:8px;margin-top:15px;">
       <strong>Ödeme</strong><p>Kapıda nakit ödeme</p>
     </div>
@@ -1417,6 +1421,15 @@ async function createOrder() {
         "orderMessage"
       );
 
+
+  const orderNote = (document.getElementById("orderNote")?.value || "").trim();
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  if (cartTotal < 200) {
+    message.innerText = "Minimum sepet tutarı 200 TL'dir. Siparişinizi tamamlamak için sepetinize ürün ekleyin.";
+    return;
+  }
 
   if (!slot) {
 
@@ -1711,6 +1724,9 @@ async function createOrder() {
           phone:
             phone,
 
+          order_note:
+            orderNote || null,
+
           status:
             "new"
 
@@ -1755,6 +1771,7 @@ async function createOrder() {
           <p><strong>Teslimat saati:</strong> ${slot}</p>
           <p><strong>Adres:</strong> ${address}</p>
           <p><strong>Sipariş:</strong> ${productSummary}</p>
+          ${orderNote ? `<p><strong>Sipariş notu:</strong> ${escapeHtml(orderNote)}</p>` : ``}
           <p><strong>Toplam:</strong> ${total.toLocaleString("tr-TR")} TL</p>
           <p><strong>Ödeme:</strong> Nakit / kapıda ödeme</p>
         </div>
@@ -1986,6 +2003,8 @@ async function showOrders() {
 
             </p>
 
+
+            ${order.order_note ? `<p><strong>Not:</strong> ${escapeHtml(order.order_note)}</p>` : ``}
 
             <p>
 
