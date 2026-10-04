@@ -601,6 +601,22 @@ async function createOrder() {
   }
 
 
+  /* Kullanıcının mahallesini al */
+
+  const neighborhood =
+    user.user_metadata?.neighborhood;
+
+
+  if (!neighborhood) {
+
+    message.innerText =
+      "Adres bilgilerinizde mahalle bilgisi bulunamadı. " +
+      "Lütfen çıkış yapıp tekrar giriş yapın.";
+
+    return;
+  }
+
+
   /* 18:00 sonrası online sipariş kapalı */
 
   const now = new Date();
@@ -750,6 +766,7 @@ async function createOrder() {
           delivery_date: deliveryDate,
           delivery_slot: slot,
           delivery_slot_id: deliverySlot.id,
+          neighborhood: neighborhood,
           status: "new"
         }
       ])
@@ -792,6 +809,11 @@ async function createOrder() {
       <p>
         <strong>Teslimat saati:</strong>
         ${slot}
+      </p>
+
+      <p>
+        <strong>Mahalle:</strong>
+        ${neighborhood}
       </p>
 
       <p>
@@ -914,6 +936,11 @@ async function showOrders() {
           <p>
             Saat:
             ${order.delivery_slot}
+          </p>
+
+          <p>
+            Mahalle:
+            ${order.neighborhood || "-"}
           </p>
 
           <p>
