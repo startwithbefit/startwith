@@ -102,6 +102,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.12/build/pdfmake.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.12/build/vfs_fonts.js"></script>
 </head>
 
 <body>
@@ -3098,7 +3100,7 @@ async function downloadDailyDeliveryPdf() {
     return;
   }
 
-  if (!window.jspdf || !window.jspdf.jsPDF) {
+  if (!window.pdfMake) {
     if (message) {
       message.style.color = "#a33";
       message.textContent = "PDF modülü yüklenemedi. İnternet bağlantısını kontrol edin.";
@@ -3128,83 +3130,105 @@ async function downloadDailyDeliveryPdf() {
       .filter(Boolean)
       .join(", ");
 
-  const rows = activeOrders.map(order => [
-    order.delivery_slot || "-",
-    order.customer_name || "-",
-    order.phone || "-",
-    [order.neighborhood, order.address].filter(Boolean).join(" / ") || "-",
-    formatProducts(order.product_name),
-    order.order_note || "-"
-  ]);
+  const tableBody = [
+    [
+      { text: "Saat", bold: true },
+      { text: "İsim Soyisim", bold: true },
+      { text: "Telefon", bold: true },
+      { text: "Adres", bold: true },
+      { text: "Sipariş", bold: true },
+      { text: "Not", bold: true }
+    ]
+  ];
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: "a4"
+  activeOrders.forEach(order => {
+    tableBody.push([
+      order.delivery_slot || "-",
+      order.customer_name || "-",
+      order.phone || "-",
+      [order.neighborhood, order.address].filter(Boolean).join(" / ") || "-",
+      formatProducts(order.product_name),
+      order.order_note || "-"
+    ]);
   });
+
+  const productionSummary = Object.entries(productTotals)
+    .map(([name, qty]) => ({
+      text: `• ${name}: ${qty}`,
+      margin: [0, 1, 0, 1]
+    }));
 
   const [year, month, day] = dateEl.value.split("-");
   const displayDate = `${day}.${month}.${year}`;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(`STARTWITH - ${displayDate} TESLIMAT LISTESI`, 14, 14);
+  const docDefinition = {
+    pageOrientation: "landscape",
+    pageSize: "A4",
+    pageMargins: [24, 22, 24, 22],
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text(`Toplam siparis: ${activeOrders.length}`, 14, 20);
-
-  const summary = Object.entries(productTotals)
-    .map(([name, qty]) => `${name}: ${qty}`)
-    .join("   |   ");
-
-  doc.setFontSize(8);
-  const summaryLines = doc.splitTextToSize("URETIM OZETI - " + summary, 268);
-  doc.text(summaryLines, 14, 26);
-
-  const tableStartY = 28 + (summaryLines.length * 4);
-
-  doc.autoTable({
-    startY: tableStartY,
-    head: [["Saat", "Isim Soyisim", "Telefon", "Adres", "Siparis", "Not"]],
-    body: rows,
-    theme: "grid",
-    styles: {
-      font: "helvetica",
-      fontSize: 7.5,
-      cellPadding: 2,
-      valign: "middle",
-      overflow: "linebreak"
+    defaultStyle: {
+      font: "Roboto",
+      fontSize: 8
     },
-    headStyles: {
-      fontStyle: "bold"
-    },
-    columnStyles: {
-      0: { cellWidth: 25 },
-      1: { cellWidth: 35 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 72 },
-      4: { cellWidth: 82 },
-      5: { cellWidth: 34 }
-    },
-    didParseCell: function(data) {
-      if (data.section === "body" && data.column.index === 0) {
-        const currentSlot = data.row.raw[0];
-        const previousRow = data.row.index > 0 ? rows[data.row.index - 1] : null;
-        const previousSlot = previousRow ? previousRow[0] : null;
-        if (data.row.index === 0 || currentSlot !== previousSlot) {
-          data.cell.styles.fontStyle = "bold";
-        }
+
+    content: [
+      {
+        text: `STARTWITH — ${displayDate} TESLİMAT LİSTESİ`,
+        bold: true,
+        fontSize: 16,
+        margin: [0, 0, 0, 5]
+      },
+      {
+        text: `Toplam sipariş: ${activeOrders.length}`,
+        fontSize: 9,
+        margin: [0, 0, 0, 10]
+      },
+
+      {
+        text: "ÜRETİM ÖZETİ",
+        bold: true,
+        fontSize: 11,
+        margin: [0, 0, 0, 4]
+      },
+
+      ...productionSummary,
+
+      {
+        text: "TESLİMAT / SİPARİŞ LİSTESİ",
+        bold: true,
+        fontSize: 11,
+        margin: [0, 12, 0, 6]
+      },
+
+      {
+        table: {
+          headerRows: 1,
+          widths: [55, 85, 75, 165, 190, 80],
+          body: tableBody
+        },
+        layout: "lightHorizontalLines"
       }
+    ]
+  };
+
+  const fileName = `Startwith_${dateEl.value}_teslimat_listesi.pdf`;
+
+  try {
+    // pdfMake'in download yöntemi mobilde indirme davranışını
+    // destekleyen tarayıcılarda doğrudan dosya indirmeyi tetikler.
+    window.pdfMake.createPdf(docDefinition).download(fileName);
+
+    if (message) {
+      message.style.color = "#3f6b45";
+      message.textContent = "PDF indirme işlemi başlatıldı.";
     }
-  });
+  } catch (downloadError) {
+    console.error(downloadError);
 
-  doc.save(`Startwith_${dateEl.value}_teslimat_listesi.pdf`);
-
-  if (message) {
-    message.style.color = "#3f6b45";
-    message.textContent = "PDF indirildi.";
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = "PDF indirilemedi.";
+    }
   }
 }
 
