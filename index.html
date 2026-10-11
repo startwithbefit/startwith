@@ -3559,71 +3559,86 @@ async function logout() {
 </script>
 
 
-<script id="startwith-browser-history">
+<script id="startwith-full-history">
 (() => {
-  let internalPop = false;
+  const screenFunctions = [
+    "showAddressForm",
+    "showAdminPanel",
+    "showCart",
+    "showForgotPassword",
+    "showHome",
+    "showLogin",
+    "showMenu",
+    "showNewPasswordForm",
+    "showOrderForm",
+    "showOrders",
+    "showProductDetail",
+    "showProfile",
+    "showRegister"
+  ];
 
-  function visibleScreen() {
-    const candidates = Array.from(document.querySelectorAll("body > div, body > main, body > section"));
-    return candidates.find(el => {
-      const st = getComputedStyle(el);
-      return st.display !== "none" && st.visibility !== "hidden" && el.offsetParent !== null;
+  let navigatingFromHistory = false;
+  let currentEntry = null;
+  const entries = new Map();
+  let seq = 0;
+
+  function cloneArgs(args) {
+    try { return JSON.parse(JSON.stringify(args)); }
+    catch (_) { return []; }
+  }
+
+  function install() {
+    screenFunctions.forEach(name => {
+      const original = window[name];
+      if (typeof original !== "function" || original.__startwithHistoryWrapped) return;
+
+      const wrapped = function(...args) {
+        const result = original.apply(this, args);
+
+        if (!navigatingFromHistory) {
+          const id = ++seq;
+          const entry = { id, fn: name, args: cloneArgs(args) };
+          entries.set(id, entry);
+          currentEntry = entry;
+          history.pushState({ startwith: true, id }, "", location.href);
+        }
+        return result;
+      };
+
+      wrapped.__startwithHistoryWrapped = true;
+      wrapped.__original = original;
+      window[name] = wrapped;
     });
   }
 
-  function screenKey() {
-    const el = visibleScreen();
-    return el ? (el.id || el.className || "screen") : "screen";
-  }
+  // Base state = page as first opened.
+  history.replaceState({ startwith: true, id: 0 }, "", location.href);
 
-  function pushStartwithState() {
-    if (internalPop) return;
-    const key = screenKey();
-    const current = history.state || {};
-    if (current.startwithScreen === key) return;
-    history.pushState({ ...current, startwithApp: true, startwithScreen: key }, "", location.href);
-  }
+  window.addEventListener("popstate", (event) => {
+    const id = event.state && event.state.startwith ? event.state.id : 0;
+    const entry = entries.get(id);
 
-  // Uygulamadaki ekran değiştiren tıklamalardan sonra yeni bir tarayıcı geçmişi oluştur.
-  document.addEventListener("click", (e) => {
-    const target = e.target.closest("button, a, .product-card, .menu-card");
-    if (!target) return;
-
-    const before = screenKey();
-    setTimeout(() => {
-      const after = screenKey();
-      if (after !== before) pushStartwithState();
-    }, 60);
-  }, true);
-
-  // Tarayıcı geri tuşu / iPhone-Android geri kaydırma hareketi.
-  window.addEventListener("popstate", () => {
-    internalPop = true;
-
-    const back =
-      Array.from(document.querySelectorAll("button, a")).find(el => {
-        if (el.offsetParent === null) return false;
-        const text = (el.textContent || "").trim().toLocaleLowerCase("tr-TR");
-        return text === "geri" || text.startsWith("← geri") || text.includes("menüye dön");
-      });
-
-    if (back) {
-      back.click();
-    } else if (typeof showHome === "function") {
-      showHome();
-    } else if (typeof showMenu === "function") {
-      showMenu();
+    navigatingFromHistory = true;
+    try {
+      if (entry && typeof window[entry.fn] === "function") {
+        window[entry.fn](...(entry.args || []));
+        currentEntry = entry;
+      } else {
+        // Going back to the app's initial/main screen.
+        const home = window.showHome;
+        if (typeof home === "function") home();
+        currentEntry = null;
+      }
+    } finally {
+      setTimeout(() => { navigatingFromHistory = false; }, 0);
     }
-
-    setTimeout(() => { internalPop = false; }, 100);
   });
 
-  // İlk uygulama durumu.
-  history.replaceState(
-    { ...(history.state || {}), startwithApp: true, startwithScreen: screenKey() },
-    "",
-    location.href
-  );
+  install();
+  window.addEventListener("DOMContentLoaded", install);
+  window.addEventListener("load", install);
+  setTimeout(install, 100);
+  setTimeout(install, 500);
 })();
 </script>
 
