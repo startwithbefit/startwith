@@ -3108,119 +3108,143 @@ async function downloadDailyDeliveryPdf() {
     return;
   }
 
-  const productTotals = {};
-
-  activeOrders.forEach(order => {
-    String(order.product_name || "")
+  const parseProducts = (value) =>
+    String(value || "")
       .split(" + ")
       .map(x => x.trim())
       .filter(Boolean)
-      .forEach(part => {
+      .map(part => {
         const match = part.match(/^(.*?)\s+x(\d+)$/i);
-        const name = (match ? match[1] : part).trim();
-        const qty = match ? Number(match[2]) : 1;
-        productTotals[name] = (productTotals[name] || 0) + qty;
+        return {
+          name: (match ? match[1] : part).trim(),
+          qty: match ? Number(match[2]) : 1
+        };
       });
-  });
 
   const formatProducts = (value) =>
-    String(value || "-")
-      .split(" + ")
-      .map(x => x.trim())
-      .filter(Boolean)
-      .join(", ");
+    parseProducts(value)
+      .map(item => `${item.name} x${item.qty}`)
+      .join(", ") || "-";
 
-  const tableBody = [
-    [
-      { text: "Saat", bold: true },
+  const slotOrder = [
+    "07:00-08:00",
+    "08:00-09:00",
+    "09:00-10:00",
+    "10:00-11:00",
+    "11:00-12:00"
+  ];
+
+  const grouped = {};
+  slotOrder.forEach(slot => grouped[slot] = []);
+
+  activeOrders.forEach(order => {
+    const slot = order.delivery_slot || "Diğer";
+    if (!grouped[slot]) grouped[slot] = [];
+    grouped[slot].push(order);
+  });
+
+  const [year, month, day] = dateEl.value.split("-");
+  const displayDate = `${day}.${month}.${year}`;
+
+  const content = [
+    {
+      text: `STARTWITH — ${displayDate} TESLİMAT VE ÜRETİM PLANI`,
+      bold: true,
+      fontSize: 16,
+      margin: [0, 0, 0, 5]
+    },
+    {
+      text: `Toplam sipariş: ${activeOrders.length}`,
+      fontSize: 9,
+      margin: [0, 0, 0, 10]
+    }
+  ];
+
+  const allSlots = [
+    ...slotOrder,
+    ...Object.keys(grouped).filter(slot => !slotOrder.includes(slot))
+  ];
+
+  allSlots.forEach(slot => {
+    const slotOrders = grouped[slot] || [];
+    if (!slotOrders.length) return;
+
+    content.push({
+      text: `${slot} TESLİMATLARI`,
+      bold: true,
+      fontSize: 12,
+      margin: [0, 10, 0, 5]
+    });
+
+    const body = [[
       { text: "İsim Soyisim", bold: true },
       { text: "Telefon", bold: true },
       { text: "Adres", bold: true },
       { text: "Sipariş", bold: true },
       { text: "Not", bold: true }
-    ]
-  ];
+    ]];
 
-  activeOrders.forEach(order => {
-    tableBody.push([
-      order.delivery_slot || "-",
-      order.customer_name || "-",
-      order.phone || "-",
-      [order.neighborhood, order.address].filter(Boolean).join(" / ") || "-",
-      formatProducts(order.product_name),
-      order.order_note || "-"
-    ]);
+    slotOrders.forEach(order => {
+      body.push([
+        order.customer_name || "-",
+        order.phone || "-",
+        [order.neighborhood, order.address].filter(Boolean).join(" / ") || "-",
+        formatProducts(order.product_name),
+        order.order_note || "-"
+      ]);
+    });
+
+    content.push({
+      table: {
+        headerRows: 1,
+        widths: [90, 78, 180, 220, 90],
+        body
+      },
+      layout: "lightHorizontalLines"
+    });
+
+    const totals = {};
+    slotOrders.forEach(order => {
+      parseProducts(order.product_name).forEach(item => {
+        totals[item.name] = (totals[item.name] || 0) + item.qty;
+      });
+    });
+
+    content.push({
+      text: `${slot} ÜRETİM / HAZIRLIK ÖZETİ`,
+      bold: true,
+      fontSize: 10,
+      margin: [0, 7, 0, 3]
+    });
+
+    Object.entries(totals).forEach(([name, qty]) => {
+      content.push({
+        text: `• ${name}: ${qty}`,
+        fontSize: 9,
+        margin: [8, 1, 0, 1]
+      });
+    });
   });
-
-  const productionSummary = Object.entries(productTotals)
-    .map(([name, qty]) => ({
-      text: `• ${name}: ${qty}`,
-      margin: [0, 1, 0, 1]
-    }));
-
-  const [year, month, day] = dateEl.value.split("-");
-  const displayDate = `${day}.${month}.${year}`;
 
   const docDefinition = {
     pageOrientation: "landscape",
     pageSize: "A4",
     pageMargins: [24, 22, 24, 22],
-
     defaultStyle: {
       font: "Roboto",
       fontSize: 8
     },
-
-    content: [
-      {
-        text: `STARTWITH — ${displayDate} TESLİMAT LİSTESİ`,
-        bold: true,
-        fontSize: 16,
-        margin: [0, 0, 0, 5]
-      },
-      {
-        text: `Toplam sipariş: ${activeOrders.length}`,
-        fontSize: 9,
-        margin: [0, 0, 0, 10]
-      },
-
-      {
-        text: "ÜRETİM ÖZETİ",
-        bold: true,
-        fontSize: 11,
-        margin: [0, 0, 0, 4]
-      },
-
-      ...productionSummary,
-
-      {
-        text: "TESLİMAT / SİPARİŞ LİSTESİ",
-        bold: true,
-        fontSize: 11,
-        margin: [0, 12, 0, 6]
-      },
-
-      {
-        table: {
-          headerRows: 1,
-          widths: [55, 85, 75, 165, 190, 80],
-          body: tableBody
-        },
-        layout: "lightHorizontalLines"
-      }
-    ]
+    content
   };
 
-  const fileName = `Startwith_${dateEl.value}_teslimat_listesi.pdf`;
+  const fileName = `Startwith_${dateEl.value}_saatlik_teslimat_uretim.pdf`;
 
   try {
-    // pdfMake'in download yöntemi mobilde indirme davranışını
-    // destekleyen tarayıcılarda doğrudan dosya indirmeyi tetikler.
     window.pdfMake.createPdf(docDefinition).download(fileName);
 
     if (message) {
       message.style.color = "#3f6b45";
-      message.textContent = "PDF indirme işlemi başlatıldı.";
+      message.textContent = "Saatlik teslimat ve üretim PDF'i indiriliyor.";
     }
   } catch (downloadError) {
     console.error(downloadError);
