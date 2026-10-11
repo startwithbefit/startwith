@@ -99,7 +99,25 @@
     .payment-notice{text-align:left;background:var(--beige);border-left:4px solid var(--yellow);border-radius:16px;padding:15px;margin:16px 0;color:var(--text);line-height:1.55}
     .order-summary{text-align:left;background:var(--cream);border-radius:18px;padding:14px 16px;margin-top:14px}
     .order-summary p{margin:9px 0;color:var(--text);line-height:1.45}
-  </style>
+  
+    /* STARTWITH - TUM EKRANLARDA ORTAK TASARIM */
+    #home h2, .form h2 {letter-spacing:-.5px;}
+    #home h3 {color:var(--forest);margin:18px 0 9px;}
+    #home p {line-height:1.5;}
+    #home > div:not(.menu-view):not(.detail-card):not(.cart-card):not(.success-card) {border-radius:20px;}
+    #home button, .form button {min-height:46px;border-radius:14px;}
+    #home .secondary, #home .back {box-shadow:none;}
+    textarea {width:100%;padding:14px;margin-top:11px;border:1px solid #d9d5c8;border-radius:15px;font:inherit;color:var(--text);background:#fffdf8;outline:none;}
+    textarea:focus {border-color:var(--leaf);box-shadow:0 0 0 3px rgba(111,168,79,.12);}
+    .detail-card,.cart-card,.success-card {padding:16px;border-radius:20px;box-shadow:0 8px 22px rgba(71,61,41,.06);}
+    .detail-title,.cart-title,.success-title {font-size:24px;}
+    .detail-desc {font-size:13px;line-height:1.45;margin:8px 0 13px;}
+    .cart-item {padding:13px;border-radius:17px;}
+    .order-summary {border:1px solid #e8e1d2;}
+    table {border-radius:14px;overflow:hidden;}
+    @media(max-width:380px){.detail-card,.cart-card,.success-card{padding:14px}.detail-title,.cart-title,.success-title{font-size:22px}}
+
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
