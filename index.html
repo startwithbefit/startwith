@@ -98,6 +98,10 @@
     .order-summary{text-align:left;background:var(--cream);border-radius:18px;padding:14px 16px;margin-top:14px}
     .order-summary p{margin:9px 0;color:var(--text);line-height:1.45}
   </style>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+
 </head>
 
 <body>
@@ -2786,6 +2790,40 @@ async function showAdminPanel() {
       </div>
 
 
+      <div style="
+        margin:18px 0;
+        padding:14px;
+        border:1px solid #ddd6c8;
+        border-radius:14px;
+        background:#fffdf7;
+      ">
+        <h3 style="margin:0 0 10px;">Günlük Teslimat / Üretim Listesi</h3>
+
+        <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:700;">
+          Rapor tarihi
+        </label>
+
+        <input
+          id="adminReportDate"
+          type="date"
+          style="width:100%;box-sizing:border-box;padding:10px;margin-bottom:10px;"
+        >
+
+        <button
+          type="button"
+          onclick="downloadDailyDeliveryPdf()"
+          style="width:100%;padding:11px;font-weight:800;"
+        >
+          PDF İndir
+        </button>
+
+        <div
+          id="adminReportMessage"
+          style="margin-top:9px;font-size:13px;font-weight:700;"
+        ></div>
+      </div>
+
+
       <div id="adminOrders">
 
         Siparişler yükleniyor...
@@ -2826,6 +2864,11 @@ async function showAdminPanel() {
     adminStockDate.min = getMinimumDeliveryDate();
     adminStockDate.value = getMinimumDeliveryDate();
     adminStockDate.addEventListener("change", loadAdminProductStock);
+  }
+
+  const adminReportDate = document.getElementById("adminReportDate");
+  if (adminReportDate) {
+    adminReportDate.value = getMinimumDeliveryDate();
   }
 
   await loadAdminProductStock();
@@ -2996,6 +3039,173 @@ function escapeHtml(
       "&#039;"
     );
 
+}
+
+
+/* =====================================================
+   GÜNLÜK TESLİMAT / ÜRETİM PDF
+===================================================== */
+
+async function downloadDailyDeliveryPdf() {
+  const dateEl = document.getElementById("adminReportDate");
+  const message = document.getElementById("adminReportMessage");
+
+  if (!dateEl || !dateEl.value) {
+    if (message) message.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  if (message) {
+    message.style.color = "#666";
+    message.textContent = "PDF hazırlanıyor...";
+  }
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user || user.user_metadata?.role !== "admin") {
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = "Yönetici yetkisi gerekiyor.";
+    }
+    return;
+  }
+
+  const { data: orders, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .eq("delivery_date", dateEl.value)
+    .order("delivery_slot", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = "Siparişler alınamadı: " + error.message;
+    }
+    return;
+  }
+
+  const activeOrders = (orders || []).filter(order => {
+    const status = String(order.status || "").toLowerCase();
+    return status !== "cancelled" && status !== "canceled";
+  });
+
+  if (!activeOrders.length) {
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = "Bu tarihte sipariş bulunmuyor.";
+    }
+    return;
+  }
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = "PDF modülü yüklenemedi. İnternet bağlantısını kontrol edin.";
+    }
+    return;
+  }
+
+  const productTotals = {};
+
+  activeOrders.forEach(order => {
+    String(order.product_name || "")
+      .split(" + ")
+      .map(x => x.trim())
+      .filter(Boolean)
+      .forEach(part => {
+        const match = part.match(/^(.*?)\s+x(\d+)$/i);
+        const name = (match ? match[1] : part).trim();
+        const qty = match ? Number(match[2]) : 1;
+        productTotals[name] = (productTotals[name] || 0) + qty;
+      });
+  });
+
+  const formatProducts = (value) =>
+    String(value || "-")
+      .split(" + ")
+      .map(x => x.trim())
+      .filter(Boolean)
+      .join(", ");
+
+  const rows = activeOrders.map(order => [
+    order.delivery_slot || "-",
+    order.customer_name || "-",
+    order.phone || "-",
+    [order.neighborhood, order.address].filter(Boolean).join(" / ") || "-",
+    formatProducts(order.product_name),
+    order.order_note || "-"
+  ]);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4"
+  });
+
+  const [year, month, day] = dateEl.value.split("-");
+  const displayDate = `${day}.${month}.${year}`;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(`STARTWITH - ${displayDate} TESLIMAT LISTESI`, 14, 14);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Toplam siparis: ${activeOrders.length}`, 14, 20);
+
+  const summary = Object.entries(productTotals)
+    .map(([name, qty]) => `${name}: ${qty}`)
+    .join("   |   ");
+
+  doc.setFontSize(8);
+  const summaryLines = doc.splitTextToSize("URETIM OZETI - " + summary, 268);
+  doc.text(summaryLines, 14, 26);
+
+  const tableStartY = 28 + (summaryLines.length * 4);
+
+  doc.autoTable({
+    startY: tableStartY,
+    head: [["Saat", "Isim Soyisim", "Telefon", "Adres", "Siparis", "Not"]],
+    body: rows,
+    theme: "grid",
+    styles: {
+      font: "helvetica",
+      fontSize: 7.5,
+      cellPadding: 2,
+      valign: "middle",
+      overflow: "linebreak"
+    },
+    headStyles: {
+      fontStyle: "bold"
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 35 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 72 },
+      4: { cellWidth: 82 },
+      5: { cellWidth: 34 }
+    },
+    didParseCell: function(data) {
+      if (data.section === "body" && data.column.index === 0) {
+        const currentSlot = data.row.raw[0];
+        const previousRow = data.row.index > 0 ? rows[data.row.index - 1] : null;
+        const previousSlot = previousRow ? previousRow[0] : null;
+        if (data.row.index === 0 || currentSlot !== previousSlot) {
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+    }
+  });
+
+  doc.save(`Startwith_${dateEl.value}_teslimat_listesi.pdf`);
+
+  if (message) {
+    message.style.color = "#3f6b45";
+    message.textContent = "PDF indirildi.";
+  }
 }
 
 
