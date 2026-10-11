@@ -1219,45 +1219,38 @@ function getProducts() {
 
   return [
     {
-      name: "Klasik Kahvaltı",
-      price: 249,
-      description: "1 adet organik haşlanmış yumurta, 50 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, 8–10 adet büyük yeşil zeytin, zeytinyağı, 40 g ev yapımı az yağlı salam, 2 dilim ev yapımı tam buğday ekmeği. Yaklaşık 510 kcal · 31 g protein · 36 g karbonhidrat · 28 g yağ. Alerjen: Yumurta, süt ve süt ürünleri, gluten."
+      name: "Klasik Kahvaltı", price: 249,
+      description: "1 adet organik haşlanmış yumurta, 50 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, 8–10 adet büyük yeşil zeytin, zeytinyağı, 40 g ev yapımı az yağlı salam, 2 dilim ev yapımı tam buğday ekmeği.",
+      nutrition: { "Enerji": "~510 kcal", "Protein": "~31 g", "Karbonhidrat": "~36 g", "Yağ": "~28 g" },
+      allergens: "Yumurta, süt ve süt ürünleri, gluten."
     },
     {
-      name: "Ege Kahvaltı",
-      price: 269,
-      description: "1 adet organik haşlanmış yumurta, 50 g sarımsaksız havuç tarator, 5 adet kokteyl domates, 1 adet küçük salatalık, 35 g yeşil ve siyah Edremit zeytini, 60 g bol mevsim yeşilliği, zeytinyağı, 2 dilim ev yapımı tam buğday ekmeği. Yaklaşık 460 kcal · 17 g protein · 40 g karbonhidrat · 26 g yağ. Alerjen: Yumurta, süt ve süt ürünleri, gluten."
+      name: "Ege Kahvaltı", price: 269,
+      description: "1 adet organik haşlanmış yumurta, 50 g sarımsaksız havuç tarator, 5 adet kokteyl domates, 1 adet küçük salatalık, 35 g yeşil ve siyah Edremit zeytini, 60 g bol mevsim yeşilliği, zeytinyağı, 2 dilim ev yapımı tam buğday ekmeği.",
+      nutrition: { "Enerji": "~460 kcal", "Protein": "~17 g", "Karbonhidrat": "~40 g", "Yağ": "~26 g" },
+      allergens: "Yumurta, süt ve süt ürünleri, gluten."
     },
     {
-      name: "Fit Kahvaltı",
-      price: 279,
-      description: "70 g ev yapımı tavuk ezmesi, 60 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, bol mevsim yeşilliği, yanında limon, 2 dilim ev yapımı tam buğday ekmeği. Yaklaşık 370 kcal · 39 g protein · 40 g karbonhidrat · 7 g yağ. Alerjen: Süt ve süt ürünleri, gluten."
+      name: "Fit Kahvaltı", price: 279,
+      description: "70 g ev yapımı tavuk ezmesi, 60 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, bol mevsim yeşilliği, yanında limon, 2 dilim ev yapımı tam buğday ekmeği.",
+      nutrition: { "Enerji": "~370 kcal", "Protein": "~39 g", "Karbonhidrat": "~40 g", "Yağ": "~7 g" },
+      allergens: "Süt ve süt ürünleri, gluten."
     },
     {
-      name: "Sporcu Kahvaltı",
-      price: 269,
-      description: "1 yumurta sarısı ve 3 yumurta beyazından omlet, 60 g ev yapımı az yağlı salam, 60 g ev yapımı lor peyniri, 75 g yağsız sütle hazırlanmış pirinç kreması, 5 adet kokteyl domates, 1 adet küçük salatalık, 2 dilim ev yapımı tam buğday ekmeği. Yaklaşık 510 kcal · 46–47 g protein · 52 g karbonhidrat · 14 g yağ. Alerjen: Yumurta, süt ve süt ürünleri, gluten."
+      name: "Sporcu Kahvaltı", price: 269,
+      description: "1 yumurta sarısı ve 3 yumurta beyazından omlet, 60 g ev yapımı az yağlı salam, 60 g ev yapımı lor peyniri, 75 g yağsız sütle hazırlanmış pirinç kreması, 5 adet kokteyl domates, 1 adet küçük salatalık, 2 dilim ev yapımı tam buğday ekmeği.",
+      nutrition: { "Enerji": "~510 kcal", "Protein": "~46–47 g", "Karbonhidrat": "~52 g", "Yağ": "~14 g" },
+      allergens: "Yumurta, süt ve süt ürünleri, gluten."
     },
     {
-      name: "Tatlı Kahvaltı",
-      price: 289,
-      description: "4 adet ev yapımı pancake, 30 g ev yapımı kaymak, 50 g vanilyalı pirinç kreması, 60 g orman meyveleri, ayrı kapta 15 g çiçek balı. Yaklaşık 570 kcal · 15 g protein · 69 g karbonhidrat · 26 g yağ. Alerjen: Yumurta, süt ve süt ürünleri, gluten."
+      name: "Tatlı Kahvaltı", price: 289,
+      description: "4 adet ev yapımı pancake, 30 g ev yapımı kaymak, 50 g vanilyalı pirinç kreması, 60 g orman meyveleri, ayrı kapta 15 g çiçek balı.",
+      nutrition: { "Enerji": "~570 kcal", "Protein": "~15 g", "Karbonhidrat": "~69 g", "Yağ": "~26 g" },
+      allergens: "Yumurta, süt ve süt ürünleri, gluten."
     },
-    {
-      name: "Tam Buğday Ekmeği (400 g)",
-      price: 90,
-      description: "400 gram ev yapımı tam buğday ekmeği."
-    },
-    {
-      name: "Ev Yapımı Kaymak (100 g)",
-      price: 125,
-      description: "100 gram ev yapımı kaymak."
-    },
-    {
-      name: "Ev Yapımı Salam (200 g)",
-      price: 110,
-      description: "200 gram ev yapımı az yağlı salam."
-    }
+    { name: "Tam Buğday Ekmeği (400 g)", price: 90, description: "400 gram ev yapımı tam buğday ekmeği.", allergens: "Gluten." },
+    { name: "Ev Yapımı Kaymak (100 g)", price: 125, description: "100 gram ev yapımı kaymak.", allergens: "Süt ve süt ürünleri." },
+    { name: "Ev Yapımı Salam (200 g)", price: 110, description: "200 gram ev yapımı az yağlı salam.", allergens: "Ürün reçetesine göre netleştirilecektir." }
   ];
 }
 
@@ -1346,23 +1339,37 @@ function showMenu() {
    ÜRÜN DETAY / ADET
 ===================================================== */
 
-function showProductDetail(
-  name,
-  price,
-  description
-) {
+function showProductDetail(name, price, description) {
+  const product = getProducts().find(item => item.name === name) || { name, price, description };
+
   let quantityOptions = "";
   for (let i = 1; i <= 10; i++) {
     quantityOptions += `<option value="${i}">${i} adet</option>`;
   }
 
+  const nutritionRows = product.nutrition
+    ? Object.entries(product.nutrition).map(([label, value]) => `
+        <tr><td style="padding:10px 12px;border-bottom:1px solid #eee;font-weight:700;">${label}</td><td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;">${value}</td></tr>`).join("")
+    : `<tr><td colspan="2" style="padding:12px;text-align:center;color:#777;">Besin değerleri netleştirilecektir.</td></tr>`;
+
   document.getElementById("home").innerHTML = `
     <div class="detail-card">
       <div class="detail-kicker">STARTWITH · BE FIT</div>
-      <h2 class="detail-title">${name}</h2>
-      <p class="detail-desc">${description}</p>
+      <h2 class="detail-title">${product.name}</h2>
+      <p class="detail-desc">${product.description}</p>
 
-      <div class="detail-price-row">
+      <h3 style="margin:22px 0 10px;color:var(--forest);">Besin Değerleri</h3>
+      <div style="overflow:hidden;border:1px solid #e8e2d7;border-radius:14px;background:#fff;">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tbody>${nutritionRows}</tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:14px;padding:13px 14px;border-radius:14px;background:var(--beige);line-height:1.5;">
+        <strong>Alerjen Uyarısı:</strong> ${product.allergens || "Netleştirilecektir."}
+      </div>
+
+      <div class="detail-price-row" style="margin-top:18px;">
         <span>Birim fiyat</span>
         <span class="detail-price">${price.toLocaleString("tr-TR")} TL</span>
       </div>
