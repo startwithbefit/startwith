@@ -2756,6 +2756,36 @@ async function showAdminPanel() {
       </div>
 
 
+      <div style="
+        margin:18px 0;
+        padding:14px;
+        border:1px solid #ddd6c8;
+        border-radius:14px;
+        background:#fffdf7;
+      ">
+        <h3 style="margin:0 0 10px;">Günlük Ürün Kontenjanları</h3>
+
+        <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:700;">
+          Teslimat tarihi
+        </label>
+
+        <input
+          id="adminStockDate"
+          type="date"
+          style="width:100%;box-sizing:border-box;padding:10px;margin-bottom:12px;"
+        >
+
+        <div id="adminProductStock">
+          Kontenjanlar yükleniyor...
+        </div>
+
+        <div
+          id="adminStockMessage"
+          style="margin-top:10px;font-size:13px;font-weight:700;"
+        ></div>
+      </div>
+
+
       <div id="adminOrders">
 
         Siparişler yükleniyor...
@@ -2791,8 +2821,130 @@ async function showAdminPanel() {
     );
 
 
+  const adminStockDate = document.getElementById("adminStockDate");
+  if (adminStockDate) {
+    adminStockDate.min = getMinimumDeliveryDate();
+    adminStockDate.value = getMinimumDeliveryDate();
+    adminStockDate.addEventListener("change", loadAdminProductStock);
+  }
+
+  await loadAdminProductStock();
   await loadAdminOrders();
 
+}
+
+
+/* =====================================================
+   YÖNETİCİ ÜRÜN KONTENJANLARI
+===================================================== */
+
+async function loadAdminProductStock() {
+  const dateEl = document.getElementById("adminStockDate");
+  const box = document.getElementById("adminProductStock");
+  const message = document.getElementById("adminStockMessage");
+
+  if (!dateEl || !box || !dateEl.value) return;
+
+  if (message) message.textContent = "";
+  box.innerHTML = "Kontenjanlar yükleniyor...";
+
+  const { data, error } = await supabaseClient.rpc("get_daily_product_stock", {
+    p_stock_date: dateEl.value
+  });
+
+  if (error) {
+    box.innerHTML = "Kontenjanlar yüklenemedi.";
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = error.message || "Bir hata oluştu.";
+    }
+    return;
+  }
+
+  const labels = {
+    bread: "Tam Buğday Ekmeği",
+    cream: "Ev Yapımı Kaymak",
+    salami: "Ev Yapımı Salam"
+  };
+
+  box.innerHTML = (data || []).map(row => {
+    const capacity = Number(row.capacity || 0);
+    const sold = Number(row.sold || 0);
+    const remaining = Number(row.remaining || 0);
+    const code = escapeHtml(row.product_code);
+    const label = escapeHtml(labels[row.product_code] || row.product_name);
+
+    return `
+      <div style="
+        padding:11px 0;
+        border-bottom:1px solid #eee7da;
+      ">
+        <div style="font-weight:800;margin-bottom:7px;">${label}</div>
+
+        <div style="font-size:12px;color:#666;margin-bottom:8px;">
+          Satıldı: <strong>${sold}</strong> &nbsp;|&nbsp;
+          Kalan: <strong>${remaining}</strong>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button
+            type="button"
+            onclick="changeAdminProductCapacity('${code}', ${capacity - 1})"
+            style="width:42px;padding:8px;"
+            ${capacity <= sold ? "disabled" : ""}
+          >−</button>
+
+          <div style="
+            min-width:72px;
+            text-align:center;
+            font-weight:800;
+          ">
+            Toplam ${capacity}
+          </div>
+
+          <button
+            type="button"
+            onclick="changeAdminProductCapacity('${code}', ${capacity + 1})"
+            style="width:42px;padding:8px;"
+          >+</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+
+async function changeAdminProductCapacity(productCode, newCapacity) {
+  const dateEl = document.getElementById("adminStockDate");
+  const message = document.getElementById("adminStockMessage");
+
+  if (!dateEl || !dateEl.value) return;
+
+  if (message) {
+    message.style.color = "#666";
+    message.textContent = "Güncelleniyor...";
+  }
+
+  const { error } = await supabaseClient.rpc("admin_set_daily_product_capacity", {
+    p_stock_date: dateEl.value,
+    p_product_code: productCode,
+    p_capacity: newCapacity
+  });
+
+  if (error) {
+    if (message) {
+      message.style.color = "#a33";
+      message.textContent = error.message || "Kontenjan güncellenemedi.";
+    }
+    return;
+  }
+
+  if (message) {
+    message.style.color = "#3f6b45";
+    message.textContent = "Kontenjan güncellendi.";
+  }
+
+  await loadAdminProductStock();
 }
 
 
