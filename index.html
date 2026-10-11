@@ -128,14 +128,11 @@
     <input id="phone" type="tel" placeholder="Telefon">
     <input id="email" type="email" placeholder="E-posta">
 
-    <select id="neighborhood">
-      <option value="">Mahalle seçin</option>
-      <option value="Batıkent Mahallesi">Batıkent Mahallesi</option>
-      <option value="Çamlıca Mahallesi">Çamlıca Mahallesi</option>
-    </select>
+    
 
-    <input id="address" type="text" placeholder="Adres">
+    
     <input id="password" type="password" placeholder="Şifre">
+    <input id="passwordAgain" type="password" placeholder="Şifre Tekrar">
 
     <button onclick="register()">Kayıt Ol</button>
     <button class="back" onclick="goHome()">Geri</button>
@@ -177,7 +174,18 @@ const supabaseClient = supabase.createClient(
   SUPABASE_KEY
 );
 
+const STARTWITH_CART_KEY = "startwithCartV1";
 let cart = [];
+try {
+  const savedCart = JSON.parse(localStorage.getItem(STARTWITH_CART_KEY) || "[]");
+  if (Array.isArray(savedCart)) cart = savedCart;
+} catch (_) {
+  cart = [];
+}
+
+function saveCart() {
+  localStorage.setItem(STARTWITH_CART_KEY, JSON.stringify(cart));
+}
 let introVideoIndex = 0;
 
 
@@ -617,20 +625,7 @@ async function register() {
       .getElementById("email")
       .value
       .trim();
-
-  const neighborhood =
-    document
-      .getElementById("neighborhood")
-      .value
-      .trim();
-
-  const address =
-    document
-      .getElementById("address")
-      .value
-      .trim();
-
-  const password =
+const password =
     document
       .getElementById("password")
       .value;
@@ -647,13 +642,21 @@ async function register() {
     !lastName ||
     !phone ||
     !email ||
-    !neighborhood ||
-    !address ||
-    !password
+    !password ||
+    !passwordAgain
   ) {
 
     message.innerText =
       "Lütfen tüm alanları doldurun.";
+
+    return;
+  }
+
+
+  if (password !== passwordAgain) {
+
+    message.innerText =
+      "Şifreler uyuşmuyor. Lütfen iki şifreyi de aynı girin.";
 
     return;
   }
@@ -678,9 +681,7 @@ async function register() {
 
             first_name: firstName,
             last_name: lastName,
-            phone: phone,
-            neighborhood: neighborhood,
-            address: address
+            phone: phone
 
           }
 
@@ -1526,6 +1527,7 @@ function addProductToCart(
   }
 
 
+  saveCart();
   showMenu();
 
 }
@@ -1594,6 +1596,7 @@ function increaseQuantity(
 
   cart[index].quantity++;
 
+  saveCart();
   showCart();
 
 }
@@ -1619,6 +1622,7 @@ function decreaseQuantity(
   }
 
 
+  saveCart();
   showCart();
 
 }
@@ -1633,7 +1637,7 @@ function removeFromCart(
     1
   );
 
-
+  saveCart();
   showCart();
 
 }
@@ -1704,6 +1708,52 @@ function getMinimumOrderDate() {
   return formatLocalDate(date);
 }
 
+
+const STARTWITH_STOCK_PRODUCTS = {
+  "Tam Buğday Ekmeği 400g": "bread",
+  "Ev Yapımı Kaymak 100g": "cream",
+  "Ev Yapımı Salam 200g": "salami"
+};
+
+function getStockQuantitiesFromCart() {
+  const q = { bread: 0, cream: 0, salami: 0 };
+  cart.forEach(item => {
+    const code = STARTWITH_STOCK_PRODUCTS[item.name];
+    if (code) q[code] += Number(item.quantity || 0);
+  });
+  return q;
+}
+
+async function loadDailyProductStock() {
+  const dateEl = document.getElementById("deliveryDate");
+  const box = document.getElementById("dailyProductStockInfo");
+  if (!dateEl || !box || !dateEl.value) return;
+
+  box.innerHTML = "Ürün kontenjanları yükleniyor...";
+
+  const { data, error } = await supabaseClient.rpc("get_daily_product_stock", {
+    p_stock_date: dateEl.value
+  });
+
+  if (error) {
+    box.innerHTML = "Ürün kontenjanları şu anda görüntülenemiyor.";
+    return;
+  }
+
+  const labels = {
+    bread: "Tam Buğday Ekmeği",
+    cream: "Ev Yapımı Kaymak",
+    salami: "Ev Yapımı Salam"
+  };
+
+  box.innerHTML = (data || []).map(row => {
+    const remaining = Number(row.remaining);
+    return `<div style="padding:4px 0;"><strong>${labels[row.product_code] || row.product_name}</strong> — ${
+      remaining > 0 ? `Son ${remaining} adet` : `<span style="color:#a33;font-weight:800;">Tükendi</span>`
+    }</div>`;
+  }).join("");
+}
+
 /* =====================================================
    SİPARİŞ EKRANI
 ===================================================== */
@@ -1727,7 +1777,10 @@ function showOrderForm() {
     <div id="deliveryAddressInfo" style="margin-top:8px;font-size:13px;color:#6f756c;line-height:1.5;"></div>
 
     <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Tarihi</label>
-    <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability()">
+    <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability(); loadDailyProductStock()">
+    <div id="dailyProductStockInfo" style="margin-top:10px;background:#f5f8ef;border:1px solid #d8e1cf;padding:10px 12px;border-radius:11px;font-size:13px;color:#4e5f4d;line-height:1.45;">
+      Ürün kontenjanları yükleniyor...
+    </div>
 
     <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Saati</label>
     <select id="deliverySlot">
@@ -1750,6 +1803,7 @@ function showOrderForm() {
 
   loadCheckoutAddresses();
   loadSlotAvailability();
+  loadDailyProductStock();
 }
 
 const STARTWITH_DELIVERY_SLOTS = [
@@ -2074,6 +2128,28 @@ async function createOrder() {
     "Sipariş oluşturuluyor...";
 
 
+  const stockQuantities = getStockQuantitiesFromCart();
+
+  if (stockQuantities.bread || stockQuantities.cream || stockQuantities.salami) {
+    message.innerText = "Ürün kontenjanları kontrol ediliyor...";
+
+    const { error: stockError } = await supabaseClient.rpc(
+      "reserve_daily_product_stock",
+      {
+        p_stock_date: deliveryDate,
+        p_bread: stockQuantities.bread,
+        p_cream: stockQuantities.cream,
+        p_salami: stockQuantities.salami
+      }
+    );
+
+    if (stockError) {
+      message.innerText = "Ürün kontenjanı yetersiz: " + stockError.message;
+      await loadDailyProductStock();
+      return;
+    }
+  }
+
   const { error } =
 
     await supabaseClient
@@ -2138,12 +2214,19 @@ async function createOrder() {
 
   if (error) {
 
+    // Sipariş kaydı oluşmadıysa ayrılan yan ürün stoklarını geri bırak.
+    if (stockQuantities.bread || stockQuantities.cream || stockQuantities.salami) {
+      await supabaseClient.rpc("release_daily_product_stock", {
+        p_stock_date: deliveryDate,
+        p_bread: stockQuantities.bread,
+        p_cream: stockQuantities.cream,
+        p_salami: stockQuantities.salami
+      });
+    }
+
     message.innerText =
-
       "Sipariş oluşturulamadı: " +
-
       error.message;
-
 
     return;
 
@@ -2151,6 +2234,7 @@ async function createOrder() {
 
 
   cart = [];
+  saveCart();
 
 
   document
