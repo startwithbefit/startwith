@@ -1341,12 +1341,23 @@ function showMenu() {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   function renderProductCard(product) {
+    const stockCodes = {
+      "Tam Buğday Ekmeği 400g": "bread",
+      "Ev Yapımı Kaymak 100g": "cream",
+      "Ev Yapımı Salam 200g": "salami"
+    };
+    const stockCode = stockCodes[product.name];
+    const stockBadge = stockCode
+      ? `<div data-stock-code="${stockCode}" style="display:inline-block;margin:7px 0 2px;padding:5px 9px;border-radius:999px;background:#f5f1dc;color:#5d6547;font-size:12px;font-weight:800;">Kontenjan yükleniyor...</div>`
+      : "";
+
     return `
       <div class="product-card">
         <div class="product-row">
           <div class="product-copy">
             <strong class="product-name">${product.name}</strong>
             <div class="product-description">${product.description}</div>
+            ${stockBadge}
             <div class="product-bottom">
               <div class="product-price">${product.price.toLocaleString("tr-TR")} TL</div>
               <button
@@ -1392,6 +1403,8 @@ function showMenu() {
       </div>
     </div>
   `;
+
+  setTimeout(loadMenuProductStock, 0);
 }
 
 
@@ -1773,7 +1786,13 @@ async function loadMenuProductStock() {
     p_stock_date: stockDate
   });
 
-  if (error) return;
+  if (error) {
+    document.querySelectorAll("[data-stock-code]").forEach(el => {
+      el.textContent = "Kontenjan alınamadı";
+    });
+    console.error("Ürün kontenjanı hatası:", error);
+    return;
+  }
 
   const remainingByCode = {};
   (data || []).forEach(row => {
