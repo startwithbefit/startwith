@@ -60,16 +60,18 @@
     .menu-note { margin:0 0 18px; color:var(--muted); font-size:14px; line-height:1.5; }
     .menu-section-label { display:flex; align-items:center; gap:9px; margin:18px 0 9px; color:var(--forest); font-size:14px; font-weight:800; }
     .menu-section-label::before { content:''; width:24px; height:5px; border-radius:99px; background:var(--yellow); }
-    .product-card { background:#fffdf8; border:1px solid #e8e1d2; border-radius:20px; padding:16px; margin-top:11px; box-shadow:0 8px 22px rgba(71,61,41,.06); }
+    .product-card { background:#fffdf8; border:1px solid #e8e1d2; border-radius:20px; padding:14px; margin-top:10px; box-shadow:0 8px 22px rgba(71,61,41,.06); }
+    .product-image { width:100%; aspect-ratio:16/8.5; object-fit:cover; display:block; border-radius:16px; margin-bottom:12px; background:#f3eee3; }
+    .detail-image { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; border-radius:18px; margin:12px 0 16px; background:#f3eee3; }
     .product-row { display:flex; align-items:flex-start; gap:13px; }
     .product-copy { flex:1; min-width:0; }
-    .product-name { display:block; color:var(--forest); font-size:17px; line-height:1.25; }
-    .product-description { margin-top:7px; color:#687067; font-size:13px; line-height:1.5; }
-    .product-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; }
-    .product-price { color:var(--green); font-size:18px; font-weight:800; }
-    .product-add { width:auto; min-width:86px; margin:0; padding:10px 14px; border-radius:14px; background:var(--yellow); color:#3f330e; box-shadow:none; font-size:14px; }
+    .product-name { display:block; color:var(--forest); font-size:17px; line-height:1.2; }
+    .product-description { margin-top:6px; color:#687067; font-size:12.5px; line-height:1.42; }
+    .product-bottom { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; }
+    .product-price { color:var(--green); font-size:17px; font-weight:800; }
+    .product-add { width:auto; min-width:82px; margin:0; padding:9px 13px; border-radius:14px; background:var(--yellow); color:#3f330e; box-shadow:none; font-size:13.5px; }
     .menu-actions { margin-top:20px; padding-top:7px; }
-    @media (max-width:380px) { .menu-view{margin:-18px;padding:17px}.product-card{padding:14px}.product-description{font-size:12.5px}.product-add{min-width:76px;padding:9px 11px} }
+    @media (max-width:380px) { .menu-view{margin:-18px;padding:17px}.product-card{padding:12px}.product-image{aspect-ratio:16/8.2;margin-bottom:10px}.product-description{font-size:12px;line-height:1.4}.product-add{min-width:74px;padding:8px 10px} }
 
 
     /* Ürün detay + sepet + sipariş başarı ekranı */
@@ -1220,6 +1222,7 @@ function getProducts() {
   return [
     {
       name: "Klasik Kahvaltı", price: 249,
+      image: "/klasik-kahvalti.png?v=20261011-2",
       description: "1 adet organik haşlanmış yumurta, 50 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, 8–10 adet büyük yeşil zeytin, zeytinyağı, 40 g ev yapımı az yağlı salam, 2 dilim ev yapımı tam buğday ekmeği.",
       nutrition: { "Enerji": "~510 kcal", "Protein": "~31 g", "Karbonhidrat": "~36 g", "Yağ": "~28 g" },
       nutrition100: { "Enerji": "~127 kcal", "Protein": "~7.7 g", "Karbonhidrat": "~9.0 g", "Yağ": "~7.0 g" },
@@ -1227,6 +1230,7 @@ function getProducts() {
     },
     {
       name: "Ege Kahvaltı", price: 269,
+      image: "/ege-kahvalti.png?v=20261011-2",
       description: "1 adet organik haşlanmış yumurta, 50 g sarımsaksız havuç tarator, 5 adet kokteyl domates, 1 adet küçük salatalık, 35 g yeşil ve siyah Edremit zeytini, 60 g bol mevsim yeşilliği, zeytinyağı, 2 dilim ev yapımı tam buğday ekmeği.",
       nutrition: { "Enerji": "~460 kcal", "Protein": "~17 g", "Karbonhidrat": "~40 g", "Yağ": "~26 g" },
       nutrition100: { "Enerji": "~110 kcal", "Protein": "~4.0 g", "Karbonhidrat": "~9.5 g", "Yağ": "~6.2 g" },
@@ -1234,6 +1238,7 @@ function getProducts() {
     },
     {
       name: "Fit Kahvaltı", price: 279,
+      image: "/fit-kahvalti.png?v=20261011-2",
       description: "70 g ev yapımı tavuk ezmesi, 60 g ev yapımı lor peyniri, 5 adet kokteyl domates, 1 adet küçük salatalık, bol mevsim yeşilliği, yanında limon, 2 dilim ev yapımı tam buğday ekmeği.",
       nutrition: { "Enerji": "~370 kcal", "Protein": "~39 g", "Karbonhidrat": "~40 g", "Yağ": "~7 g" },
       nutrition100: { "Enerji": "~87 kcal", "Protein": "~9.2 g", "Karbonhidrat": "~9.4 g", "Yağ": "~1.6 g" },
@@ -1241,6 +1246,7 @@ function getProducts() {
     },
     {
       name: "Sporcu Kahvaltı", price: 269,
+      image: "/sporcu-kahvalti.png?v=20261011-2",
       description: "1 yumurta sarısı ve 3 yumurta beyazından omlet, 60 g ev yapımı az yağlı salam, 60 g ev yapımı lor peyniri, 75 g yağsız sütle hazırlanmış pirinç kreması, 5 adet kokteyl domates, 1 adet küçük salatalık, 2 dilim ev yapımı tam buğday ekmeği.",
       nutrition: { "Enerji": "~510 kcal", "Protein": "~46–47 g", "Karbonhidrat": "~52 g", "Yağ": "~14 g" },
       nutrition100: { "Enerji": "~97 kcal", "Protein": "~8.9 g", "Karbonhidrat": "~9.9 g", "Yağ": "~2.7 g" },
@@ -1248,6 +1254,7 @@ function getProducts() {
     },
     {
       name: "Tatlı Kahvaltı", price: 289,
+      image: "/tatli-kahvalti.png?v=20261011-2",
       description: "4 adet ev yapımı pancake, 30 g ev yapımı kaymak, 50 g vanilyalı pirinç kreması, 60 g orman meyveleri, ayrı kapta 15 g çiçek balı.",
       nutrition: { "Enerji": "~570 kcal", "Protein": "~15 g", "Karbonhidrat": "~69 g", "Yağ": "~26 g" },
       nutrition100: { "Enerji": "~184 kcal", "Protein": "~4.8 g", "Karbonhidrat": "~22.3 g", "Yağ": "~8.4 g" },
@@ -1255,6 +1262,7 @@ function getProducts() {
     },
     {
       name: "Tam Buğday Ekmeği (400 g)", price: 90,
+      image: "/tam-bugday-ekmegi.png?v=20261011-2",
       description: "400 gram ev yapımı tam buğday ekmeği.",
       nutrition: { "Enerji": "~950 kcal", "Protein": "~34 g", "Karbonhidrat": "~180 g", "Yağ": "~10 g" },
       nutrition100: { "Enerji": "~238 kcal", "Protein": "~8.5 g", "Karbonhidrat": "~45 g", "Yağ": "~2.5 g" },
@@ -1262,6 +1270,7 @@ function getProducts() {
     },
     {
       name: "Ev Yapımı Kaymak (100 g)", price: 125,
+      image: "/kaymak.png?v=20261011-2",
       description: "100 gram ev yapımı kaymak.",
       nutrition: { "Enerji": "~585 kcal", "Protein": "~3 g", "Karbonhidrat": "~3 g", "Yağ": "~63 g" },
       nutrition100: { "Enerji": "~585 kcal", "Protein": "~3 g", "Karbonhidrat": "~3 g", "Yağ": "~63 g" },
@@ -1269,6 +1278,7 @@ function getProducts() {
     },
     {
       name: "Ev Yapımı Salam (200 g)", price: 110,
+      image: "/salam.png?v=20261011-2",
       description: "200 gram ev yapımı az yağlı salam.",
       nutrition: { "Enerji": "~300 kcal", "Protein": "~40 g", "Karbonhidrat": "~4 g", "Yağ": "~14 g" },
       nutrition100: { "Enerji": "~150 kcal", "Protein": "~20 g", "Karbonhidrat": "~2 g", "Yağ": "~7 g" },
@@ -1276,6 +1286,7 @@ function getProducts() {
     },
     {
       name: "Ev Yapımı Tavuk Ezmesi (100 g)", price: 80,
+      image: "/tavuk-ezmesi.png?v=20261011-2",
       description: "100 gram ev yapımı tavuk ezmesi.",
       nutrition: { "Enerji": "~165 kcal", "Protein": "~31 g", "Karbonhidrat": "~1 g", "Yağ": "~4 g" },
       nutrition100: { "Enerji": "~165 kcal", "Protein": "~31 g", "Karbonhidrat": "~1 g", "Yağ": "~4 g" },
@@ -1311,6 +1322,7 @@ function showMenu() {
 
     return `
       <div class="product-card">
+        ${product.image ? `<img class="product-image" src="${product.image}" alt="${product.name}" loading="lazy">` : ""}
         <div class="product-row">
           <div class="product-copy">
             <strong class="product-name">${product.name}</strong>
@@ -1391,6 +1403,7 @@ function showProductDetail(name, price, description) {
     <div class="detail-card">
       <div class="detail-kicker">STARTWITH · BE FIT</div>
       <h2 class="detail-title">${product.name}</h2>
+      ${product.image ? `<img class="detail-image" src="${product.image}" alt="${product.name}">` : ""}
       <p class="detail-desc">${product.description}</p>
 
       <h3 style="margin:22px 0 10px;color:var(--forest);">Besin Değerleri</h3>
