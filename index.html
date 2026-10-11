@@ -3558,5 +3558,74 @@ async function logout() {
 
 </script>
 
+
+<script id="startwith-browser-history">
+(() => {
+  let internalPop = false;
+
+  function visibleScreen() {
+    const candidates = Array.from(document.querySelectorAll("body > div, body > main, body > section"));
+    return candidates.find(el => {
+      const st = getComputedStyle(el);
+      return st.display !== "none" && st.visibility !== "hidden" && el.offsetParent !== null;
+    });
+  }
+
+  function screenKey() {
+    const el = visibleScreen();
+    return el ? (el.id || el.className || "screen") : "screen";
+  }
+
+  function pushStartwithState() {
+    if (internalPop) return;
+    const key = screenKey();
+    const current = history.state || {};
+    if (current.startwithScreen === key) return;
+    history.pushState({ ...current, startwithApp: true, startwithScreen: key }, "", location.href);
+  }
+
+  // Uygulamadaki ekran değiştiren tıklamalardan sonra yeni bir tarayıcı geçmişi oluştur.
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest("button, a, .product-card, .menu-card");
+    if (!target) return;
+
+    const before = screenKey();
+    setTimeout(() => {
+      const after = screenKey();
+      if (after !== before) pushStartwithState();
+    }, 60);
+  }, true);
+
+  // Tarayıcı geri tuşu / iPhone-Android geri kaydırma hareketi.
+  window.addEventListener("popstate", () => {
+    internalPop = true;
+
+    const back =
+      Array.from(document.querySelectorAll("button, a")).find(el => {
+        if (el.offsetParent === null) return false;
+        const text = (el.textContent || "").trim().toLocaleLowerCase("tr-TR");
+        return text === "geri" || text.startsWith("← geri") || text.includes("menüye dön");
+      });
+
+    if (back) {
+      back.click();
+    } else if (typeof showHome === "function") {
+      showHome();
+    } else if (typeof showMenu === "function") {
+      showMenu();
+    }
+
+    setTimeout(() => { internalPop = false; }, 100);
+  });
+
+  // İlk uygulama durumu.
+  history.replaceState(
+    { ...(history.state || {}), startwithApp: true, startwithScreen: screenKey() },
+    "",
+    location.href
+  );
+})();
+</script>
+
 </body>
 </html>
