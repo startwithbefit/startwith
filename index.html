@@ -2104,7 +2104,13 @@ async function createOrder() {
     row => row.delivery_slot === slot
   );
 
-  if (!selectedCapacity || Number(selectedCapacity.remaining) <= 0) {
+  // Slot henüz delivery_slots tablosunda oluşmadıysa hiç sipariş yoktur:
+  // yeni saat diliminin tamamı (6 kontenjan) boş kabul edilir.
+  const selectedRemaining = selectedCapacity
+    ? Number(selectedCapacity.remaining)
+    : 6;
+
+  if (selectedRemaining <= 0) {
     message.innerText =
       "Bu teslimat saati dolmuştur. Lütfen farklı bir saat dilimi seçerek siparişinize devam edin.";
     await loadSlotAvailability();
