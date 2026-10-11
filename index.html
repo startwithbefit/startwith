@@ -1699,8 +1699,8 @@ function formatLocalDate(date) {
 
 function getMinimumOrderDate() {
   const date = new Date();
-  // 18:00'dan önce en erken yarın, 18:00 ve sonrasında en erken öbür gün.
-  date.setDate(date.getDate() + (date.getHours() >= 18 ? 2 : 1));
+  // 19:00'dan önce en erken yarın, 19:00 ve sonrasında en erken öbür gün.
+  date.setDate(date.getDate() + (date.getHours() >= 19 ? 2 : 1));
   return formatLocalDate(date);
 }
 
@@ -1710,15 +1710,14 @@ function getMinimumOrderDate() {
 
 function showOrderForm() {
   const minimumDate = getMinimumOrderDate();
-  const afterCutoff = new Date().getHours() >= 18;
+  const afterCutoff = new Date().getHours() >= 19;
 
   document.getElementById("home").innerHTML = `
     <h2>Sipariş Oluştur</h2>
     <div style="background:#fff7d6;border:1px solid #f1d47a;padding:9px 11px;border-radius:11px;margin:8px 0 14px;line-height:1.4;color:#5b5239;font-size:12px;">
       <strong>Önemli bilgi</strong><br>
-      Bugün için online sipariş alamıyoruz. Ertesi gün için vereceğiniz siparişlerde son sipariş saatimiz <strong>18:00</strong>'dır.
-      ${afterCutoff ? `<br><br><strong>Bugün saat 18:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
-      <br><br>Bizimle iletişime geçerseniz yardımcı olmak isteriz. 🌿
+      Bir sonraki gün teslimatları için saat <strong>19:00</strong>'a kadar sipariş verebilirsiniz. Aynı gün içerisinde randevulu teslimat seçeneğimiz yoktur. Kontenjan doluluğu ya da başka bir problem ile alakalı bizimle iletişime geçebilirsiniz.
+      ${afterCutoff ? `<br><br><strong>Bugün saat 19:00 geçtiği için yarın için online sipariş veremezsiniz.</strong> Bir sonraki uygun tarihi seçebilirsiniz.` : ``}
     </div>
 
     <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Adresi</label>
@@ -1754,10 +1753,11 @@ function showOrderForm() {
 }
 
 const STARTWITH_DELIVERY_SLOTS = [
-  "07:00-07:30","07:30-08:00","08:00-08:30","08:30-09:00",
-  "09:00-09:30","09:30-10:00","10:00-10:30","10:30-11:00",
-  "11:00-11:30","11:30-12:00","12:00-12:30","12:30-13:00",
-  "13:00-13:30","13:30-14:00"
+  "07:00-08:00",
+  "08:00-09:00",
+  "09:00-10:00",
+  "10:00-11:00",
+  "11:00-12:00"
 ];
 
 async function loadSlotAvailability() {
@@ -1786,7 +1786,7 @@ async function loadSlotAvailability() {
 
   let options = `<option value="">Teslimat saati seçin</option>`;
   STARTWITH_DELIVERY_SLOTS.forEach(slot => {
-    const remaining = remainingBySlot[slot] ?? 3;
+    const remaining = remainingBySlot[slot] ?? 6;
     const full = remaining <= 0;
     const label = full
       ? `${slot.replace("-", " - ")} — DOLU`
@@ -1941,8 +1941,8 @@ async function createOrder() {
 
   if (selectedDate < minimumDate) {
     message.innerText =
-      new Date().getHours() >= 18
-        ? "Saat 18:00 geçtiği için yarın için online sipariş veremezsiniz. Lütfen bir sonraki günü veya daha ileri bir tarihi seçin."
+      new Date().getHours() >= 19
+        ? "Saat 19:00 geçtiği için yarın için online sipariş veremezsiniz. Lütfen bir sonraki günü veya daha ileri bir tarihi seçin."
         : "Bugün için online sipariş alamıyoruz. Lütfen yarın veya daha ileri bir tarih seçin.";
     return;
   }
@@ -2005,7 +2005,7 @@ async function createOrder() {
 
   // delivery_slots tablosuna müşteriden doğrudan INSERT yapmıyoruz.
   // RLS güvenliği korunurken Supabase'deki güvenli RPC fonksiyonu
-  // seçilen tarih + saat kaydını bulur veya kapasitesi 3 olacak şekilde oluşturur.
+  // seçilen tarih + saat kaydını bulur veya kapasitesi 6 olacak şekilde oluşturur.
   const { data: slotRpcData, error: slotRpcError } = await supabaseClient
     .rpc("get_or_create_delivery_slot", {
       p_slot_date: deliveryDate,
