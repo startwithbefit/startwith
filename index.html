@@ -3146,6 +3146,14 @@ async function downloadDailyDeliveryPdf() {
   const [year, month, day] = dateEl.value.split("-");
   const displayDate = `${day}.${month}.${year}`;
 
+  const dailyTotals = {};
+
+  activeOrders.forEach(order => {
+    parseProducts(order.product_name).forEach(item => {
+      dailyTotals[item.name] = (dailyTotals[item.name] || 0) + item.qty;
+    });
+  });
+
   const content = [
     {
       text: `STARTWITH — ${displayDate} TESLİMAT VE ÜRETİM PLANI`,
@@ -3156,8 +3164,19 @@ async function downloadDailyDeliveryPdf() {
     {
       text: `Toplam sipariş: ${activeOrders.length}`,
       fontSize: 9,
-      margin: [0, 0, 0, 10]
-    }
+      margin: [0, 0, 0, 8]
+    },
+    {
+      text: "TOPLAM ÜRETİM ÖZETİ",
+      bold: true,
+      fontSize: 11,
+      margin: [0, 0, 0, 3]
+    },
+    ...Object.entries(dailyTotals).map(([name, qty]) => ({
+      text: `• ${name}: ${qty}`,
+      fontSize: 9,
+      margin: [8, 1, 0, 1]
+    }))
   ];
 
   const allSlots = [
