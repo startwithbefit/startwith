@@ -1513,6 +1513,21 @@ function addProductToCart(
     );
 
 
+  const stockCode = STARTWITH_STOCK_PRODUCTS[name];
+
+  if (stockCode) {
+    const remaining = Number(STARTWITH_CURRENT_PRODUCT_STOCK[stockCode]);
+    const alreadyInCart = cart
+      .filter(item => STARTWITH_STOCK_PRODUCTS[item.name] === stockCode)
+      .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+
+    if (Number.isFinite(remaining) && alreadyInCart + quantity > remaining) {
+      alert(`Bu üründen yalnızca ${remaining} adet kaldı. Sepetinizde ${alreadyInCart} adet var.`);
+      return;
+    }
+  }
+
+
   const existingItem =
     cart.find(
 
@@ -1551,6 +1566,7 @@ function addProductToCart(
 ===================================================== */
 
 function showCart() {
+  loadMenuProductStock();
   let total = 0;
   let products = "";
 
@@ -1606,6 +1622,21 @@ function showCart() {
 function increaseQuantity(
   index
 ) {
+
+  const item = cart[index];
+  const stockCode = item ? STARTWITH_STOCK_PRODUCTS[item.name] : null;
+
+  if (stockCode) {
+    const remaining = Number(STARTWITH_CURRENT_PRODUCT_STOCK[stockCode]);
+    const currentInCart = cart
+      .filter(x => STARTWITH_STOCK_PRODUCTS[x.name] === stockCode)
+      .reduce((sum, x) => sum + Number(x.quantity || 0), 0);
+
+    if (Number.isFinite(remaining) && currentInCart >= remaining) {
+      alert(`Bu üründen yalnızca ${remaining} adet kaldı. Daha fazla ekleyemezsiniz.`);
+      return;
+    }
+  }
 
   cart[index].quantity++;
 
@@ -1780,6 +1811,8 @@ function getMinimumDeliveryDate() {
   return `${y}-${m}-${day}`;
 }
 
+let STARTWITH_CURRENT_PRODUCT_STOCK = {};
+
 async function loadMenuProductStock() {
   const stockDate = getMinimumDeliveryDate();
   const { data, error } = await supabaseClient.rpc("get_daily_product_stock", {
@@ -1798,6 +1831,7 @@ async function loadMenuProductStock() {
   (data || []).forEach(row => {
     remainingByCode[row.product_code] = Number(row.remaining);
   });
+  STARTWITH_CURRENT_PRODUCT_STOCK = remainingByCode;
 
   document.querySelectorAll("[data-stock-code]").forEach(el => {
     const code = el.getAttribute("data-stock-code");
@@ -2295,6 +2329,7 @@ async function createOrder() {
 
   cart = [];
   saveCart();
+  await loadSlotAvailability();
 
 
   document
