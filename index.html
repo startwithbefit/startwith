@@ -1599,6 +1599,8 @@ function increaseQuantity(
   saveCart();
   showCart();
 
+
+  setTimeout(loadMenuProductStock, 0);
 }
 
 
@@ -1754,6 +1756,44 @@ async function loadDailyProductStock() {
   }).join("");
 }
 
+
+
+function getMinimumDeliveryDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + (d.getHours() >= 19 ? 2 : 1));
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+async function loadMenuProductStock() {
+  const stockDate = getMinimumDeliveryDate();
+  const { data, error } = await supabaseClient.rpc("get_daily_product_stock", {
+    p_stock_date: stockDate
+  });
+
+  if (error) return;
+
+  const remainingByCode = {};
+  (data || []).forEach(row => {
+    remainingByCode[row.product_code] = Number(row.remaining);
+  });
+
+  document.querySelectorAll("[data-stock-code]").forEach(el => {
+    const code = el.getAttribute("data-stock-code");
+    const remaining = remainingByCode[code];
+    if (remaining === undefined) return;
+
+    el.innerHTML = remaining > 0
+      ? `Son ${remaining} adet`
+      : "Tükendi";
+
+    el.style.fontWeight = "800";
+    if (remaining <= 0) el.style.color = "#a33";
+  });
+}
+
 /* =====================================================
    SİPARİŞ EKRANI
 ===================================================== */
@@ -1777,12 +1817,8 @@ function showOrderForm() {
     <div id="deliveryAddressInfo" style="margin-top:8px;font-size:13px;color:#6f756c;line-height:1.5;"></div>
 
     <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Tarihi</label>
-    <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability(); loadDailyProductStock()">
-    <div id="dailyProductStockInfo" style="margin-top:10px;background:#f5f8ef;border:1px solid #d8e1cf;padding:10px 12px;border-radius:11px;font-size:13px;color:#4e5f4d;line-height:1.45;">
-      Ürün kontenjanları yükleniyor...
-    </div>
-
-    <label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Saati</label>
+    <input type="date" id="deliveryDate" min="${minimumDate}" value="${minimumDate}" onchange="loadSlotAvailability()">
+<label style="display:block;text-align:center;font-size:16px;font-weight:800;color:#365b43;margin:18px 0 8px;">Teslimat Saati</label>
     <select id="deliverySlot">
       <option value="">Saatler yükleniyor...</option>
     </select>
@@ -1803,7 +1839,6 @@ function showOrderForm() {
 
   loadCheckoutAddresses();
   loadSlotAvailability();
-  loadDailyProductStock();
 }
 
 const STARTWITH_DELIVERY_SLOTS = [
